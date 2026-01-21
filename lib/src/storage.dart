@@ -97,9 +97,7 @@ class IntervalStorage<TX> implements SeriesStorage<TX, double> {
         _maxValues = _ensureDoubleStorage(maxValues),
         _meanValues = _ensureDoubleStorage(meanValues) {
     final length = _xValues.length;
-    if (_minValues.length != length ||
-        _maxValues.length != length ||
-        _meanValues.length != length) {
+    if (_minValues.length != length || _maxValues.length != length || _meanValues.length != length) {
       throw ArgumentError(
         'All value arrays must have the same length for IntervalStorage.',
       );

@@ -54,9 +54,7 @@ class AggregationEngine {
     final seriesLength = series.length;
 
     for (var start = 0; start < seriesLength; start += windowSize) {
-      final end = (start + windowSize) > seriesLength
-          ? seriesLength
-          : start + windowSize;
+      final end = (start + windowSize) > seriesLength ? seriesLength : start + windowSize;
       if (start >= end) {
         break;
       }

@@ -6,8 +6,7 @@ sealed class WindowSpec {
 
   factory WindowSpec.rolling(num size) => RollingWindowSpec(size);
 
-  factory WindowSpec.pixelAligned(double pixelDensity) =>
-      PixelAlignedWindowSpec(pixelDensity);
+  factory WindowSpec.pixelAligned(double pixelDensity) => PixelAlignedWindowSpec(pixelDensity);
 }
 
 /// Reduces a list of values into a single value.
