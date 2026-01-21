@@ -150,6 +150,17 @@ void main() {
       expect(storage.getX(2), equals(3000));
     });
 
+    test('should accept Int64List input without reallocation', () {
+      final xValues = Int64List.fromList([1000, 2000, 3000]);
+      final storage = TypedDataStorage<int, double>(
+        xValues: xValues,
+        yValues: [10.0, 20.0, 30.0],
+      );
+
+      xValues[1] = 2500;
+      expect(storage.getX(1), equals(2500));
+    });
+
     test('should handle large int values for timestamps', () {
       // Unix timestamp in milliseconds (typical DateTime representation)
       final timestamp = DateTime(2024, 1, 1).millisecondsSinceEpoch;
