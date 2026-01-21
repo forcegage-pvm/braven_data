@@ -14,6 +14,8 @@
 /// - -9223372036854775808 (Int64.min) for missing int/time values
 library;
 
+import 'dart:typed_data';
+
 import 'package:braven_data/braven_data.dart';
 import 'package:test/test.dart';
 
@@ -112,6 +114,28 @@ void main() {
       final copy = storage.copy();
       expect(copy.getX(1).isNaN, isTrue);
       expect(copy.getY(1).isNaN, isTrue);
+    });
+
+    test('should accept Float64List inputs', () {
+      final xValues = Float64List.fromList([1.0, 2.0, 3.0]);
+      final yValues = Float64List.fromList([10.0, 20.0, 30.0]);
+      final storage = TypedDataStorage<double, double>(
+        xValues: xValues,
+        yValues: yValues,
+      );
+      expect(storage.length, equals(3));
+      expect(storage.getX(2), equals(3.0));
+      expect(storage.getY(0), equals(10.0));
+    });
+
+    test('should throw when lengths differ', () {
+      expect(
+        () => TypedDataStorage<double, double>(
+          xValues: [1.0, 2.0],
+          yValues: [10.0],
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
     });
   });
 
