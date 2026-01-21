@@ -90,4 +90,59 @@ void main() {
       expect(() => SeriesReducer.sum.reduce([]), throwsArgumentError);
     });
   });
+
+  group('AggregationSpec', () {
+    test('stores window and reducer', () {
+      final window = WindowSpec.fixed(10);
+      final reducer = SeriesReducer.mean;
+
+      final spec = AggregationSpec<int>(window: window, reducer: reducer);
+
+      expect(spec.window, same(window));
+      expect(spec.reducer, isA<MeanReducer>());
+    });
+
+    test('supports all window variants', () {
+      final fixed = AggregationSpec<int>(
+        window: WindowSpec.fixed(5),
+        reducer: SeriesReducer.mean,
+      );
+      final rolling = AggregationSpec<int>(
+        window: WindowSpec.rolling(2.5),
+        reducer: SeriesReducer.max,
+      );
+      final pixelAligned = AggregationSpec<int>(
+        window: WindowSpec.pixelAligned(1.5),
+        reducer: SeriesReducer.min,
+      );
+
+      expect(fixed.window, isA<FixedWindowSpec>());
+      expect(rolling.window, isA<RollingWindowSpec>());
+      expect(pixelAligned.window, isA<PixelAlignedWindowSpec>());
+    });
+
+    test('supports built-in reducers', () {
+      final mean = AggregationSpec<int>(
+        window: WindowSpec.fixed(1),
+        reducer: SeriesReducer.mean,
+      );
+      final max = AggregationSpec<int>(
+        window: WindowSpec.fixed(1),
+        reducer: SeriesReducer.max,
+      );
+      final min = AggregationSpec<int>(
+        window: WindowSpec.fixed(1),
+        reducer: SeriesReducer.min,
+      );
+      final sum = AggregationSpec<int>(
+        window: WindowSpec.fixed(1),
+        reducer: SeriesReducer.sum,
+      );
+
+      expect(mean.reducer, isA<MeanReducer>());
+      expect(max.reducer, isA<MaxReducer>());
+      expect(min.reducer, isA<MinReducer>());
+      expect(sum.reducer, isA<SumReducer>());
+    });
+  });
 }

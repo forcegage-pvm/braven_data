@@ -23,6 +23,14 @@ abstract class SeriesReducer<T> {
   static SeriesReducer<double> get sum => const SumReducer();
 }
 
+/// Configuration for aggregating a series.
+class AggregationSpec<TX> {
+  const AggregationSpec({required this.window, required this.reducer});
+
+  final WindowSpec window;
+  final SeriesReducer<dynamic> reducer;
+}
+
 /// Non-overlapping fixed-size window.
 class FixedWindowSpec extends WindowSpec {
   FixedWindowSpec(this.size) : super._() {
