@@ -9,6 +9,9 @@ abstract class Pipeline<TX, TY> {
   /// Applies a value mapper to each Y value in the series.
   Pipeline<TX, TY> map(Mapper<TY> mapper);
 
+  /// Applies a fixed windowed reducer over non-overlapping windows.
+  Pipeline<TX, TY> window(WindowSpec window, SeriesReducer<TY> reducer);
+
   /// Applies a windowed reducer over the series.
   Pipeline<TX, TY> rolling(WindowSpec window, SeriesReducer<TY> reducer);
 
@@ -39,6 +42,14 @@ class PipelineBuilder<TX, TY> implements Pipeline<TX, TY> {
   }
 
   @override
+  Pipeline<TX, TY> window(WindowSpec window, SeriesReducer<TY> reducer) {
+    _ensureNotCollapsed();
+    return PipelineBuilder<TX, TY>._(
+      [..._steps, _WindowStep<TX, TY>(window, reducer)],
+    );
+  }
+
+  @override
   Pipeline<TX, TY> rolling(WindowSpec window, SeriesReducer<TY> reducer) {
     _ensureNotCollapsed();
     return PipelineBuilder<TX, TY>._(
@@ -60,6 +71,8 @@ class PipelineBuilder<TX, TY> implements Pipeline<TX, TY> {
     for (final step in _steps) {
       if (step is _MapStep<TX, TY>) {
         current = _applyMap(current, step.mapper);
+      } else if (step is _WindowStep<TX, TY>) {
+        current = _applyWindow(current, step.window, step.reducer);
       } else if (step is _RollingStep<TX, TY>) {
         current = _applyRolling(current, step.window, step.reducer);
       } else if (step is _CollapseStep<TX, TY>) {
@@ -76,6 +89,8 @@ class PipelineBuilder<TX, TY> implements Pipeline<TX, TY> {
     for (final step in _steps) {
       if (step is _MapStep<TX, TY>) {
         current = _applyMap(current, step.mapper);
+      } else if (step is _WindowStep<TX, TY>) {
+        current = _applyWindow(current, step.window, step.reducer);
       } else if (step is _RollingStep<TX, TY>) {
         current = _applyRolling(current, step.window, step.reducer);
       } else if (step is _CollapseStep<TX, TY>) {
@@ -128,6 +143,31 @@ class PipelineBuilder<TX, TY> implements Pipeline<TX, TY> {
     }
 
     throw UnimplementedError('PixelAlignedWindowSpec is not supported yet.');
+  }
+
+  Series<TX, TY> _applyWindow(
+    Series<TX, TY> input,
+    WindowSpec window,
+    SeriesReducer<TY> reducer,
+  ) {
+    if (input.length == 0) {
+      return Series<TX, TY>.fromTypedData(
+        meta: input.meta,
+        xValues: <TX>[],
+        yValues: <TY>[],
+        stats: null,
+      );
+    }
+
+    if (window is FixedWindowSpec) {
+      return _applyFixedRolling(input, window, reducer);
+    }
+
+    if (window is PixelAlignedWindowSpec) {
+      throw UnimplementedError('PixelAlignedWindowSpec is not supported yet.');
+    }
+
+    throw ArgumentError('window() requires FixedWindowSpec.');
   }
 
   Series<TX, TY> _applyFixedRolling(
@@ -234,6 +274,13 @@ final class _MapStep<TX, TY> extends _PipelineStep<TX, TY> {
 
 final class _RollingStep<TX, TY> extends _PipelineStep<TX, TY> {
   const _RollingStep(this.window, this.reducer);
+
+  final WindowSpec window;
+  final SeriesReducer<TY> reducer;
+}
+
+final class _WindowStep<TX, TY> extends _PipelineStep<TX, TY> {
+  const _WindowStep(this.window, this.reducer);
 
   final WindowSpec window;
   final SeriesReducer<TY> reducer;
