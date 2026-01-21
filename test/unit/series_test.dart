@@ -1,7 +1,6 @@
-import 'package:test/test.dart';
-
 import 'package:braven_data/src/series.dart';
 import 'package:braven_data/src/storage.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('SeriesMeta', () {
