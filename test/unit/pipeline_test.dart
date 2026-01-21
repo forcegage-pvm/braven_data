@@ -1,16 +1,13 @@
-import 'package:test/test.dart';
-
 import 'package:braven_data/src/aggregation.dart';
 import 'package:braven_data/src/pipeline.dart';
 import 'package:braven_data/src/series.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('PipelineBuilder', () {
     test('supports fluent chaining', () {
-      final pipeline = PipelineBuilder<int, double>()
-          .map((value) => value + 1)
-          .rolling(WindowSpec.fixed(2), SeriesReducer.mean)
-          .collapse(SeriesReducer.sum);
+      final pipeline =
+          PipelineBuilder<int, double>().map((value) => value + 1).rolling(WindowSpec.fixed(2), SeriesReducer.mean).collapse(SeriesReducer.sum);
 
       expect(pipeline, isA<Pipeline<int, double>>());
       expect(pipeline, isA<PipelineBuilder<int, double>>());
@@ -67,9 +64,7 @@ void main() {
 
     test('collapse returns scalar value', () {
       final series = _makeSeries([0, 1, 2], [1, 2, 3]);
-      final pipeline = PipelineBuilder<int, double>()
-          .map((value) => value * 2)
-          .collapse(SeriesReducer.sum);
+      final pipeline = PipelineBuilder<int, double>().map((value) => value * 2).collapse(SeriesReducer.sum);
 
       final result = pipeline.executeScalar(series);
 
