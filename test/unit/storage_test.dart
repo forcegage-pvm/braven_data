@@ -401,6 +401,24 @@ void main() {
       }
     });
 
+    test('should not propagate typed input mutations to copy', () {
+      final xValues = Float64List.fromList([1.0, 2.0, 3.0]);
+      final yValues = Float64List.fromList([10.0, 20.0, 30.0]);
+      final storage = TypedDataStorage<double, double>(
+        xValues: xValues,
+        yValues: yValues,
+      );
+      final copy = storage.copy();
+
+      xValues[1] = 99.0;
+      yValues[1] = 199.0;
+
+      expect(storage.getX(1), equals(99.0));
+      expect(storage.getY(1), equals(199.0));
+      expect(copy.getX(1), equals(2.0));
+      expect(copy.getY(1), equals(20.0));
+    });
+
     test('should create independent copy of ListStorage', () {
       final storage = ListStorage<String, int>(
         xValues: ['a', 'b', 'c'],
@@ -428,6 +446,35 @@ void main() {
       expect(copy.getMin(0), equals(storage.getMin(0)));
       expect(copy.getMax(0), equals(storage.getMax(0)));
       expect(copy.getMean(0), equals(storage.getMean(0)));
+    });
+
+    test('should not propagate interval input mutations to copy', () {
+      final xValues = Float64List.fromList([1.0, 2.0, 3.0]);
+      final minValues = Float64List.fromList([5.0, 10.0, 15.0]);
+      final maxValues = Float64List.fromList([10.0, 20.0, 30.0]);
+      final meanValues = Float64List.fromList([7.5, 15.0, 22.5]);
+      final storage = IntervalStorage<double>(
+        xValues: xValues,
+        minValues: minValues,
+        maxValues: maxValues,
+        meanValues: meanValues,
+      );
+      final copy = storage.copy();
+
+      xValues[0] = 42.0;
+      minValues[0] = 99.0;
+      maxValues[0] = 199.0;
+      meanValues[0] = 299.0;
+
+      expect(storage.getX(0), equals(42.0));
+      expect(storage.getMin(0), equals(99.0));
+      expect(storage.getMax(0), equals(199.0));
+      expect(storage.getMean(0), equals(299.0));
+
+      expect(copy.getX(0), equals(1.0));
+      expect(copy.getMin(0), equals(5.0));
+      expect(copy.getMax(0), equals(10.0));
+      expect(copy.getMean(0), equals(7.5));
     });
 
     test('should preserve sentinels in copied data', () {
