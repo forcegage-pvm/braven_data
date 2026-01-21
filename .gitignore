@@ -1,0 +1,27 @@
+# Dart/Pub
+.dart_tool/
+.packages
+.pub-cache/
+build/
+doc/api/
+pubspec.lock
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+
+# Coverage
+coverage/
+
+# Generated
+*.g.dart
+*.freezed.dart
