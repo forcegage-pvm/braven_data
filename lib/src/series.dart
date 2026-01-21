@@ -1,5 +1,6 @@
 import 'aggregation.dart';
 import 'engine.dart';
+import 'pipeline.dart';
 import 'storage.dart';
 
 /// Primary container for a sequence of data points.
@@ -45,6 +46,11 @@ class Series<TX, TY> {
   TX getX(int index) => _storage.getX(index) as TX;
 
   TY getY(int index) => _storage.getY(index) as TY;
+
+  /// Applies a transformation pipeline to this series.
+  Series<TX, TY> transform(Pipeline<TX, TY> pipeline) {
+    return pipeline.execute(this);
+  }
 
   Series<TX, TY> aggregate(AggregationSpec<TX> spec) {
     final result = AggregationEngine.aggregate(this, spec);

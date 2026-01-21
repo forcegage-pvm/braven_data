@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:braven_data/src/aggregation.dart';
+import 'package:braven_data/src/pipeline.dart';
 import 'package:braven_data/src/series.dart';
 import 'package:braven_data/src/storage.dart';
 import 'package:test/test.dart';
@@ -307,6 +308,50 @@ void main() {
       expect(aggregated.getY(0), 150.0);
       expect(aggregated.getY(1), 180.0);
       expect(aggregated.getY(2), 160.0);
+    });
+  });
+
+  group('Series.transform', () {
+    test('applies the pipeline to the series', () {
+      final series = Series<int, double>(
+        id: 'series-12',
+        meta: const SeriesMeta(name: 'Speed', unit: 'm/s'),
+        storage: ListStorage<int, double>(
+          xValues: [1, 2, 3],
+          yValues: [10.0, 20.0, 30.0],
+        ),
+      );
+
+      final pipeline = PipelineBuilder<int, double>().map(
+        (value) => value * 2,
+      );
+
+      final transformed = series.transform(pipeline);
+
+      expect(transformed.length, 3);
+      expect(transformed.getX(0), 1);
+      expect(transformed.getY(0), 20.0);
+      expect(transformed.getY(2), 60.0);
+    });
+
+    test('preserves type safety for typed pipelines', () {
+      final series = Series<int, double>(
+        id: 'series-13',
+        meta: const SeriesMeta(name: 'Cadence', unit: 'rpm'),
+        storage: ListStorage<int, double>(
+          xValues: [1, 2],
+          yValues: [80.0, 85.0],
+        ),
+      );
+
+      final Pipeline<int, double> pipeline =
+          PipelineBuilder<int, double>().map((value) => value + 5.0);
+
+      final Series<int, double> transformed = series.transform(pipeline);
+
+      expect(transformed, isA<Series<int, double>>());
+      expect(transformed.getY(0), 85.0);
+      expect(transformed.getY(1), 90.0);
     });
   });
 }
