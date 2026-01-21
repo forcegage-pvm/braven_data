@@ -1,4 +1,6 @@
 import 'package:braven_data/src/aggregation.dart';
+import 'package:braven_data/src/series.dart';
+import 'package:braven_data/src/storage.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -143,6 +145,131 @@ void main() {
       expect(max.reducer, isA<MaxReducer>());
       expect(min.reducer, isA<MinReducer>());
       expect(sum.reducer, isA<SumReducer>());
+    });
+  });
+
+  group('Aggregation correctness', () {
+    Series<int, double> buildSeries() {
+      final xValues = List<int>.generate(100, (index) => index + 1);
+      final yValues = List<double>.generate(100, (index) => index + 1.0);
+      return Series<int, double>(
+        id: 'series-agg',
+        meta: const SeriesMeta(name: 'Metric'),
+        storage: ListStorage<int, double>(
+          xValues: xValues,
+          yValues: yValues,
+        ),
+      );
+    }
+
+    List<int> expectedXValues() =>
+        List<int>.generate(10, (index) => index * 10 + 1);
+
+    test('mean reducer aggregates into 10 windows', () {
+      final series = buildSeries();
+
+      final result = series.aggregate(
+        AggregationSpec<int>(
+          window: WindowSpec.fixed(10),
+          reducer: SeriesReducer.mean,
+        ),
+      );
+
+      expect(result.length, 10);
+      expect(result.getX(0), 1);
+      expect(
+        List<int>.generate(result.length, result.getX),
+        expectedXValues(),
+      );
+
+      final expectedMeans = List<double>.generate(
+        10,
+        (index) => (index * 10 + 1 + index * 10 + 10) / 2.0,
+      );
+
+      for (var i = 0; i < expectedMeans.length; i++) {
+        expect(result.getY(i), closeTo(expectedMeans[i], 1e-9));
+      }
+    });
+
+    test('max reducer aggregates into 10 windows', () {
+      final series = buildSeries();
+
+      final result = series.aggregate(
+        AggregationSpec<int>(
+          window: WindowSpec.fixed(10),
+          reducer: SeriesReducer.max,
+        ),
+      );
+
+      expect(result.length, 10);
+      expect(
+        List<int>.generate(result.length, result.getX),
+        expectedXValues(),
+      );
+
+      final expectedMax = List<double>.generate(
+        10,
+        (index) => (index + 1) * 10.0,
+      );
+
+      for (var i = 0; i < expectedMax.length; i++) {
+        expect(result.getY(i), expectedMax[i]);
+      }
+    });
+
+    test('min reducer aggregates into 10 windows', () {
+      final series = buildSeries();
+
+      final result = series.aggregate(
+        AggregationSpec<int>(
+          window: WindowSpec.fixed(10),
+          reducer: SeriesReducer.min,
+        ),
+      );
+
+      expect(result.length, 10);
+      expect(
+        List<int>.generate(result.length, result.getX),
+        expectedXValues(),
+      );
+
+      final expectedMin =
+          List<double>.generate(10, (index) => index * 10 + 1.0);
+
+      for (var i = 0; i < expectedMin.length; i++) {
+        expect(result.getY(i), expectedMin[i]);
+      }
+    });
+
+    test('sum reducer aggregates into 10 windows', () {
+      final series = buildSeries();
+
+      final result = series.aggregate(
+        AggregationSpec<int>(
+          window: WindowSpec.fixed(10),
+          reducer: SeriesReducer.sum,
+        ),
+      );
+
+      expect(result.length, 10);
+      expect(
+        List<int>.generate(result.length, result.getX),
+        expectedXValues(),
+      );
+
+      final expectedSum = List<double>.generate(
+        10,
+        (index) {
+          final start = index * 10 + 1;
+          final end = index * 10 + 10;
+          return (start + end) * 10 / 2.0;
+        },
+      );
+
+      for (var i = 0; i < expectedSum.length; i++) {
+        expect(result.getY(i), expectedSum[i]);
+      }
     });
   });
 }
