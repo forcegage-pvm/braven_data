@@ -165,4 +165,90 @@ void main() {
       expect(series.stats, stats);
     });
   });
+
+  group('Series.slice', () {
+    test('returns a subset with start and end', () {
+      final series = Series<int, double>(
+        id: 'series-5',
+        meta: const SeriesMeta(name: 'Speed', unit: 'm/s'),
+        storage: ListStorage<int, double>(
+          xValues: [1, 2, 3, 4],
+          yValues: [10.0, 20.0, 30.0, 40.0],
+        ),
+      );
+
+      final slice = series.slice(1, 3);
+
+      expect(slice.id, isNot(series.id));
+      expect(slice.meta, same(series.meta));
+      expect(slice.stats, isNull);
+      expect(slice.length, 2);
+      expect(slice.getX(0), 2);
+      expect(slice.getY(1), 30.0);
+    });
+
+    test('defaults end to length when omitted', () {
+      final series = Series<int, double>(
+        id: 'series-6',
+        meta: const SeriesMeta(name: 'Cadence'),
+        storage: ListStorage<int, double>(
+          xValues: [1, 2, 3],
+          yValues: [90.0, 95.0, 100.0],
+        ),
+      );
+
+      final slice = series.slice(1);
+
+      expect(slice.length, 2);
+      expect(slice.getX(0), 2);
+      expect(slice.getY(1), 100.0);
+    });
+
+    test('supports empty slice', () {
+      final series = Series<int, double>(
+        id: 'series-7',
+        meta: const SeriesMeta(name: 'Power', unit: 'w'),
+        storage: ListStorage<int, double>(
+          xValues: [1, 2],
+          yValues: [200.0, 220.0],
+        ),
+      );
+
+      final slice = series.slice(1, 1);
+
+      expect(slice.length, 0);
+    });
+
+    test('supports full slice', () {
+      final series = Series<int, double>(
+        id: 'series-8',
+        meta: const SeriesMeta(name: 'Elevation', unit: 'm'),
+        storage: ListStorage<int, double>(
+          xValues: [1, 2, 3],
+          yValues: [1.0, 2.0, 3.0],
+        ),
+      );
+
+      final slice = series.slice(0, series.length);
+
+      expect(slice.length, series.length);
+      expect(slice.getX(2), 3);
+      expect(slice.getY(0), 1.0);
+    });
+
+    test('throws RangeError for invalid bounds', () {
+      final series = Series<int, double>(
+        id: 'series-9',
+        meta: const SeriesMeta(name: 'Heart Rate', unit: 'bpm'),
+        storage: ListStorage<int, double>(
+          xValues: [1, 2],
+          yValues: [100.0, 110.0],
+        ),
+      );
+
+      expect(() => series.slice(-1, 1), throwsA(isA<RangeError>()));
+      expect(() => series.slice(0, 3), throwsA(isA<RangeError>()));
+      expect(() => series.slice(2, 1), throwsA(isA<RangeError>()));
+    });
+  });
 }

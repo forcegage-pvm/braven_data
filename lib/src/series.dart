@@ -44,6 +44,38 @@ class Series<TX, TY> {
 
   TY getY(int index) => _storage.getY(index) as TY;
 
+  Series<TX, TY> slice(int start, [int? end]) {
+    final resolvedEnd = end ?? length;
+    if (start < 0) {
+      throw RangeError.range(start, 0, length, 'start');
+    }
+    if (resolvedEnd > length) {
+      throw RangeError.range(resolvedEnd, 0, length, 'end');
+    }
+    if (start > resolvedEnd) {
+      throw RangeError('start ($start) must be <= end ($resolvedEnd).');
+    }
+
+    final xValues = <TX>[];
+    final yValues = <TY>[];
+    for (var i = start; i < resolvedEnd; i++) {
+      xValues.add(getX(i));
+      yValues.add(getY(i));
+    }
+
+    final storage = TypedDataStorage<TX, TY>(
+      xValues: xValues,
+      yValues: yValues,
+    );
+
+    return Series<TX, TY>(
+      id: _generateId(),
+      meta: meta,
+      storage: storage,
+      stats: null,
+    );
+  }
+
   static String _generateId() {
     final timestamp = DateTime.now().microsecondsSinceEpoch;
     _idCounter += 1;
