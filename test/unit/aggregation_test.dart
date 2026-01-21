@@ -39,4 +39,55 @@ void main() {
       );
     });
   });
+
+  group('SeriesReducer', () {
+    test('provides built-in reducers via static accessors', () {
+      expect(SeriesReducer.mean, isA<MeanReducer>());
+      expect(SeriesReducer.max, isA<MaxReducer>());
+      expect(SeriesReducer.min, isA<MinReducer>());
+      expect(SeriesReducer.sum, isA<SumReducer>());
+    });
+
+    test('mean reducer calculates arithmetic mean', () {
+      final reducer = SeriesReducer.mean;
+
+      expect(reducer.reduce([1.0, 3.0, 5.0]), 3.0);
+      expect(reducer.reduce([2.0, 2.0]), 2.0);
+    });
+
+    test('max reducer selects maximum value', () {
+      final reducer = SeriesReducer.max;
+
+      expect(reducer.reduce([1.0, 7.5, 3.0]), 7.5);
+      expect(reducer.reduce([-4.0, -2.0, -9.0]), -2.0);
+    });
+
+    test('min reducer selects minimum value', () {
+      final reducer = SeriesReducer.min;
+
+      expect(reducer.reduce([1.0, 7.5, 3.0]), 1.0);
+      expect(reducer.reduce([-4.0, -2.0, -9.0]), -9.0);
+    });
+
+    test('sum reducer totals values', () {
+      final reducer = SeriesReducer.sum;
+
+      expect(reducer.reduce([1.0, 2.0, 3.0]), 6.0);
+      expect(reducer.reduce([-1.5, 2.5]), 1.0);
+    });
+
+    test('reducers return single element unchanged', () {
+      expect(SeriesReducer.mean.reduce([4.25]), 4.25);
+      expect(SeriesReducer.max.reduce([4.25]), 4.25);
+      expect(SeriesReducer.min.reduce([4.25]), 4.25);
+      expect(SeriesReducer.sum.reduce([4.25]), 4.25);
+    });
+
+    test('reducers throw for empty input', () {
+      expect(() => SeriesReducer.mean.reduce([]), throwsArgumentError);
+      expect(() => SeriesReducer.max.reduce([]), throwsArgumentError);
+      expect(() => SeriesReducer.min.reduce([]), throwsArgumentError);
+      expect(() => SeriesReducer.sum.reduce([]), throwsArgumentError);
+    });
+  });
 }
