@@ -13,6 +13,11 @@ double root4(double value) => math.pow(value, 0.25).toDouble();
 /// Computes cycling Normalized Power (NP).
 ///
 /// Algorithm: rolling 30s mean → power(4) → mean → power(0.25).
+///
+/// Example:
+/// ```dart
+/// final np = NormalizedPowerCalculator<int>(windowSize: 30).calculate(series);
+/// ```
 class NormalizedPowerCalculator<TX> {
   NormalizedPowerCalculator({this.windowSize = 30});
 

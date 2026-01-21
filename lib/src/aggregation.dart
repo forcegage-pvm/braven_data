@@ -24,6 +24,9 @@ abstract class SeriesReducer<T> {
 }
 
 /// Configuration for aggregating a series.
+///
+/// Combines a windowing strategy with a reducer that collapses each window
+/// into a single output value.
 class AggregationSpec<TX> {
   const AggregationSpec({required this.window, required this.reducer});
 
@@ -32,6 +35,8 @@ class AggregationSpec<TX> {
 }
 
 /// Non-overlapping fixed-size window.
+///
+/// Each window contains `size` consecutive points.
 class FixedWindowSpec extends WindowSpec {
   FixedWindowSpec(this.size) : super._() {
     _validateSize(size, 'size');
@@ -41,6 +46,8 @@ class FixedWindowSpec extends WindowSpec {
 }
 
 /// Sliding window that moves through data.
+///
+/// Each step advances by one element, producing overlapping windows.
 class RollingWindowSpec extends WindowSpec {
   RollingWindowSpec(this.size) : super._() {
     _validateSize(size, 'size');
@@ -50,6 +57,9 @@ class RollingWindowSpec extends WindowSpec {
 }
 
 /// Pixel-aligned dynamic window for rendering.
+///
+/// This window size is derived from `pixelDensity` and is typically used for
+/// visualization downsampling.
 class PixelAlignedWindowSpec extends WindowSpec {
   PixelAlignedWindowSpec(this.pixelDensity) : super._() {
     if (pixelDensity.isNaN || pixelDensity.isInfinite || pixelDensity <= 0) {
@@ -61,6 +71,8 @@ class PixelAlignedWindowSpec extends WindowSpec {
 }
 
 /// Arithmetic mean reducer for double values.
+///
+/// Throws an [ArgumentError] when [values] is empty.
 class MeanReducer extends SeriesReducer<double> {
   const MeanReducer();
 
@@ -80,6 +92,8 @@ class MeanReducer extends SeriesReducer<double> {
 }
 
 /// Maximum reducer for double values.
+///
+/// Returns the largest value in the window. Throws when [values] is empty.
 class MaxReducer extends SeriesReducer<double> {
   const MaxReducer();
 
@@ -102,6 +116,8 @@ class MaxReducer extends SeriesReducer<double> {
 }
 
 /// Minimum reducer for double values.
+///
+/// Returns the smallest value in the window. Throws when [values] is empty.
 class MinReducer extends SeriesReducer<double> {
   const MinReducer();
 
@@ -124,6 +140,8 @@ class MinReducer extends SeriesReducer<double> {
 }
 
 /// Sum reducer for double values.
+///
+/// Returns the arithmetic sum of the window. Throws when [values] is empty.
 class SumReducer extends SeriesReducer<double> {
   const SumReducer();
 

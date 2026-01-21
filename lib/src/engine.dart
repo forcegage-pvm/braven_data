@@ -2,6 +2,8 @@ import 'aggregation.dart';
 import 'series.dart';
 
 /// Result of aggregating a series into windowed values.
+///
+/// Each entry in [xValues] corresponds to the aggregated value in [yValues].
 class AggregationResult<TX, TY> {
   const AggregationResult({
     required this.xValues,
@@ -13,9 +15,20 @@ class AggregationResult<TX, TY> {
 }
 
 /// Aggregation engine for series windowing and reduction.
+///
+/// Example:
+/// ```dart
+/// final result = AggregationEngine.aggregate(
+///   series,
+///   AggregationSpec(window: WindowSpec.fixed(5), reducer: SeriesReducer.mean),
+/// );
+/// ```
 class AggregationEngine {
   const AggregationEngine._();
 
+  /// Aggregates [series] into windowed values described by [spec].
+  ///
+  /// Currently only [FixedWindowSpec] windows are supported.
   static AggregationResult<TX, TY> aggregate<TX, TY>(
     Series<TX, TY> series,
     AggregationSpec<TX> spec,

@@ -5,17 +5,20 @@ import 'series.dart';
 typedef Mapper<T> = T Function(T value);
 
 /// Fluent interface for building series transformation pipelines.
+///
+/// Pipelines are immutable builders: each call returns a new pipeline with the
+/// additional step applied.
 abstract class Pipeline<TX, TY> {
-  /// Applies a value mapper to each Y value in the series.
+  /// Applies [mapper] to each Y value in the series.
   Pipeline<TX, TY> map(Mapper<TY> mapper);
 
-  /// Applies a fixed windowed reducer over non-overlapping windows.
+  /// Applies [reducer] over non-overlapping windows defined by [window].
   Pipeline<TX, TY> window(WindowSpec window, SeriesReducer<TY> reducer);
 
-  /// Applies a windowed reducer over the series.
+  /// Applies [reducer] over rolling windows defined by [window].
   Pipeline<TX, TY> rolling(WindowSpec window, SeriesReducer<TY> reducer);
 
-  /// Collapses the series into a single scalar value.
+  /// Collapses the series into a single scalar value using [reducer].
   Pipeline<TX, TY> collapse(SeriesReducer<TY> reducer);
 
   /// Executes the pipeline and returns a transformed series.
@@ -26,6 +29,14 @@ abstract class Pipeline<TX, TY> {
 }
 
 /// Concrete pipeline builder implementation.
+///
+/// Example:
+/// ```dart
+/// final pipeline = PipelineBuilder<int, double>()
+///     .map((value) => value * 1.05)
+///     .rolling(WindowSpec.rolling(30), SeriesReducer.mean);
+/// final output = pipeline.execute(series);
+/// ```
 class PipelineBuilder<TX, TY> implements Pipeline<TX, TY> {
   PipelineBuilder() : _steps = const [];
 

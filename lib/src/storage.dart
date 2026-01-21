@@ -10,6 +10,11 @@ abstract class SeriesStorage<TX, TY> {
   SeriesStorage<TX, TY> copy();
 }
 
+/// Stores numeric series values using typed-data buffers when possible.
+///
+/// The constructor normalizes numeric lists into `Float64List` or `Int64List`
+/// for efficient storage. Use this storage when you want compact, fast numeric
+/// access and predictable memory layout.
 class TypedDataStorage<TX, TY> implements SeriesStorage<TX, TY> {
   TypedDataStorage({
     required List<TX> xValues,
@@ -42,6 +47,10 @@ class TypedDataStorage<TX, TY> implements SeriesStorage<TX, TY> {
       );
 }
 
+/// Stores series values in standard Dart lists.
+///
+/// Use this storage when values are not strictly numeric or when list
+/// semantics (such as mixed types) are required.
 class ListStorage<TX, TY> implements SeriesStorage<TX, TY> {
   ListStorage({
     required List<TX> xValues,
@@ -75,6 +84,8 @@ class ListStorage<TX, TY> implements SeriesStorage<TX, TY> {
 }
 
 /// Storage for aggregated interval data using a structure-of-arrays layout.
+///
+/// Each X value maps to a minimum, maximum, and mean value for the interval.
 class IntervalStorage<TX> implements SeriesStorage<TX, double> {
   IntervalStorage({
     required List<TX> xValues,

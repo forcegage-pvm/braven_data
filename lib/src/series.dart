@@ -4,6 +4,18 @@ import 'pipeline.dart';
 import 'storage.dart';
 
 /// Primary container for a sequence of data points.
+///
+/// A `Series` owns typed storage for X/Y values plus metadata. It validates
+/// storage types at construction to keep reads type-safe.
+///
+/// Example:
+/// ```dart
+/// final series = Series<int, double>.fromTypedData(
+///   meta: const SeriesMeta(name: 'Power', unit: 'W'),
+///   xValues: [0, 1, 2],
+///   yValues: [120.0, 130.0, 125.0],
+/// );
+/// ```
 class Series<TX, TY> {
   static int _idCounter = 0;
 
@@ -16,6 +28,9 @@ class Series<TX, TY> {
     _validateStorageTypes(storage);
   }
 
+  /// Creates a `Series` backed by typed-data storage.
+  ///
+  /// When `id` is not provided, a unique identifier is generated.
   factory Series.fromTypedData({
     String? id,
     required SeriesMeta meta,
@@ -48,10 +63,15 @@ class Series<TX, TY> {
   TY getY(int index) => _storage.getY(index) as TY;
 
   /// Applies a transformation pipeline to this series.
+  ///
+  /// The returned series reflects all pipeline steps applied to this series.
   Series<TX, TY> transform(Pipeline<TX, TY> pipeline) {
     return pipeline.execute(this);
   }
 
+  /// Aggregates this series into windowed values using [spec].
+  ///
+  /// The reducer in [spec] is applied over fixed windows of the series.
   Series<TX, TY> aggregate(AggregationSpec<TX> spec) {
     final result = AggregationEngine.aggregate(this, spec);
     final storage = TypedDataStorage<TX, TY>(
@@ -67,6 +87,9 @@ class Series<TX, TY> {
     );
   }
 
+  /// Returns a new series containing values in the range `[start, end)`.
+  ///
+  /// Throws a [RangeError] when the indices are invalid.
   Series<TX, TY> slice(int start, [int? end]) {
     final resolvedEnd = end ?? length;
     if (start < 0) {
@@ -124,7 +147,7 @@ class Series<TX, TY> {
   }
 }
 
-/// Value objects for series metadata and statistics.
+/// Describes a series with a name and optional unit.
 class SeriesMeta {
   const SeriesMeta({
     required this.name,
@@ -135,6 +158,10 @@ class SeriesMeta {
   final String? unit;
 }
 
+/// Precomputed statistics for a series.
+///
+/// The values are expected to reflect the underlying data at the time they
+/// were computed and are not automatically updated.
 class SeriesStats {
   const SeriesStats({
     required this.min,
