@@ -1,4 +1,5 @@
 import 'aggregation.dart';
+import 'engine.dart';
 import 'storage.dart';
 
 /// Primary container for a sequence of data points.
@@ -46,48 +47,10 @@ class Series<TX, TY> {
   TY getY(int index) => _storage.getY(index) as TY;
 
   Series<TX, TY> aggregate(AggregationSpec<TX> spec) {
-    final window = spec.window;
-    if (window is! FixedWindowSpec) {
-      throw UnimplementedError(
-        'Only FixedWindowSpec is supported for aggregation right now.',
-      );
-    }
-
-    final windowSizeRaw = window.size;
-    if (windowSizeRaw % 1 != 0) {
-      throw ArgumentError('Fixed window size must be an integer value.');
-    }
-    final windowSize = windowSizeRaw.toInt();
-    if (windowSize <= 0) {
-      throw ArgumentError('Fixed window size must be >= 1.');
-    }
-
-    final aggregatedX = <TX>[];
-    final aggregatedY = <TY>[];
-    final seriesLength = length;
-
-    for (var start = 0; start < seriesLength; start += windowSize) {
-      final end = (start + windowSize) > seriesLength
-          ? seriesLength
-          : start + windowSize;
-      if (start >= end) {
-        break;
-      }
-
-      aggregatedX.add(getX(start));
-      final windowValues = <TY>[];
-      for (var i = start; i < end; i++) {
-        windowValues.add(getY(i));
-      }
-
-      final reducer = spec.reducer as SeriesReducer<TY>;
-      final reduced = reducer.reduce(windowValues);
-      aggregatedY.add(reduced);
-    }
-
+    final result = AggregationEngine.aggregate(this, spec);
     final storage = TypedDataStorage<TX, TY>(
-      xValues: aggregatedX,
-      yValues: aggregatedY,
+      xValues: result.xValues,
+      yValues: result.yValues,
     );
 
     return Series<TX, TY>(
