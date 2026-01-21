@@ -46,10 +46,10 @@ void main() {
   final yData = Float64List.fromList([10.0, 15.5, 12.0, 8.5]);
 
   // Create Series
-  final series = Series.fromTypedData(
+  final series = Series<int, double>.fromTypedData(
     id: 'sensor_1',
-    x: xData,
-    y: yData,
+    xValues: xData,
+    yValues: yData,
     meta: SeriesMeta(name: 'Voltage', unit: 'V'),
   );
 
@@ -65,7 +65,7 @@ final window = WindowSpec.fixed(1000000); // microseconds
 
 // Aggregate using Mean reducer
 final aggregated = series.aggregate(
-  AggregationSpec(window: window, reducer: Reducers.mean),
+  AggregationSpec(window: window, reducer: SeriesReducer.mean),
 );
 
 print('Downsampled to ${aggregated.length} points');
@@ -74,14 +74,19 @@ print('Downsampled to ${aggregated.length} points');
 ### Calculate Normalized Power
 
 ```dart
-final npPipeline = Pipeline()
-  .rolling(WindowSpec.fixed(30 * 1000000), Reducers.mean) // 30s SMA
+final npPipeline = PipelineBuilder<int, double>()
+  .rolling(WindowSpec.rolling(30), SeriesReducer.mean) // 30-point SMA
   .map((v) => pow(v, 4))
-  .collapse(Reducers.mean)
+  .collapse(SeriesReducer.mean)
   .map((v) => pow(v, 0.25));
 
 final np = npPipeline.executeScalar(powerSeries);
 print('Normalized Power: $np');
+
+// Or use the built-in calculator
+final npCalculator = NormalizedPowerCalculator<int>(windowSize: 30);
+final normalizedPower = npCalculator.calculate(powerSeries);
+print('Normalized Power (calculator): $normalizedPower');
 ```
 
 ## Storage Types
@@ -130,9 +135,9 @@ dart run test/benchmarks/perf.dart
 
 ## Documentation
 
-- API proposal: [specs/data_input_api_proposal.md](specs/data_input_api_proposal.md)
-- Data model: [specs/data-model.md](specs/data-model.md)
-- Plan: [specs/plan.md](specs/plan.md)
+- API proposal: [specs/001-data-input/spec.md](specs/001-data-input/spec.md)
+- Data model: [specs/001-data-input/data-model.md](specs/001-data-input/data-model.md)
+- Plan: [specs/001-data-input/plan.md](specs/001-data-input/plan.md)
 
 ```
 

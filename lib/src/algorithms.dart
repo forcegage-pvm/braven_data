@@ -24,7 +24,10 @@ class NormalizedPowerCalculator<TX> {
   final int windowSize;
 
   double calculate(Series<TX, double> series) {
-    final pipeline = PipelineBuilder<TX, double>().rolling(WindowSpec.rolling(windowSize), SeriesReducer.mean).map(pow4).collapse(SeriesReducer.mean);
+    final pipeline = PipelineBuilder<TX, double>()
+        .rolling(WindowSpec.rolling(windowSize), SeriesReducer.mean)
+        .map(pow4)
+        .collapse(SeriesReducer.mean);
 
     final meanPower4 = pipeline.executeScalar(series);
     return root4(meanPower4);
@@ -69,8 +72,11 @@ class VariabilityIndexCalculator<TX> {
   final int windowSize;
 
   double calculate(Series<TX, double> series) {
-    final normalizedPower = NormalizedPowerCalculator<TX>(windowSize: windowSize).calculate(series);
-    final averagePower = PipelineBuilder<TX, double>().collapse(SeriesReducer.mean).executeScalar(series);
+    final normalizedPower =
+        NormalizedPowerCalculator<TX>(windowSize: windowSize).calculate(series);
+    final averagePower = PipelineBuilder<TX, double>()
+        .collapse(SeriesReducer.mean)
+        .executeScalar(series);
 
     if (averagePower == 0) {
       throw StateError('Average power is zero; VI is undefined.');
@@ -104,7 +110,9 @@ class ExponentialMeanReducer extends SeriesReducer<double> {
 }
 
 double _alphaFromTimeConstant(double timeConstantSeconds) {
-  if (timeConstantSeconds.isNaN || timeConstantSeconds.isInfinite || timeConstantSeconds <= 0) {
+  if (timeConstantSeconds.isNaN ||
+      timeConstantSeconds.isInfinite ||
+      timeConstantSeconds <= 0) {
     throw ArgumentError('timeConstantSeconds must be a positive finite value.');
   }
   return 1 - math.exp(-1 / timeConstantSeconds);
