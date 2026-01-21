@@ -1,10 +1,14 @@
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:braven_data/src/series.dart';
+
 const int _defaultLength = 200000;
 const int _defaultRandomAccessCount = 200000;
 const int _defaultWarmupRuns = 2;
 const int _defaultIterations = 5;
+const int _tenMillionPoints = 10000000;
+const int _tenMillionRandomAccessCount = 500000;
 
 double _doubleSink = 0.0;
 int _intSink = 0;
@@ -80,6 +84,25 @@ int sumRandomInts(List<int> values, List<int> indices) {
     sum += values[indices[i]];
   }
   _intSink = sum;
+  return sum;
+}
+
+double sumSequentialSeries(Series<double, double> series) {
+  var sum = 0.0;
+  for (var i = 0; i < series.length; i++) {
+    sum += series.getX(i) + series.getY(i);
+  }
+  _doubleSink = sum;
+  return sum;
+}
+
+double sumRandomSeries(Series<double, double> series, List<int> indices) {
+  var sum = 0.0;
+  for (var i = 0; i < indices.length; i++) {
+    final index = indices[i];
+    sum += series.getX(index) + series.getY(index);
+  }
+  _doubleSink = sum;
   return sum;
 }
 
@@ -180,8 +203,96 @@ List<BenchmarkResult> runAllBenchmarks({
   ];
 }
 
+List<BenchmarkResult> runTenMillionPointIngestionBenchmarks({
+  int length = _tenMillionPoints,
+  int randomAccessCount = _tenMillionRandomAccessCount,
+  int warmupRuns = 1,
+  int iterations = 1,
+}) {
+  if (length <= 0) {
+    throw ArgumentError.value(length, 'length', 'Must be positive.');
+  }
+  if (randomAccessCount <= 0) {
+    throw ArgumentError.value(
+      randomAccessCount,
+      'randomAccessCount',
+      'Must be positive.',
+    );
+  }
+  if (iterations <= 0) {
+    throw ArgumentError.value(iterations, 'iterations', 'Must be positive.');
+  }
+
+  final xValues = generateFloat64List(length);
+  final yValues = generateFloat64List(length);
+  const meta = SeriesMeta(name: '10M ingestion benchmark');
+
+  for (var i = 0; i < warmupRuns; i++) {
+    Series.fromTypedData(
+      id: 'warmup-$i',
+      meta: meta,
+      xValues: xValues,
+      yValues: yValues,
+    );
+  }
+
+  var totalIngestMicros = 0;
+  Series<double, double>? series;
+  for (var i = 0; i < iterations; i++) {
+    final stopwatch = Stopwatch()..start();
+    final created = Series.fromTypedData(
+      id: 'ingest-$i',
+      meta: meta,
+      xValues: xValues,
+      yValues: yValues,
+    );
+    stopwatch.stop();
+    totalIngestMicros += stopwatch.elapsedMicroseconds;
+    series = created;
+  }
+
+  final ingestionAverage = totalIngestMicros / iterations;
+  final ingestionResult = BenchmarkResult(
+    'Series ingestion ($length points)',
+    ingestionAverage.toDouble(),
+  );
+
+  final resolvedSeries = series ??
+      Series.fromTypedData(
+        id: 'ingest-final',
+        meta: meta,
+        xValues: xValues,
+        yValues: yValues,
+      );
+
+  final indices = generateRandomIndices(length, randomAccessCount);
+
+  final sequentialResult = runBenchmark(
+    'Series access sequential ($length points)',
+    () => sumSequentialSeries(resolvedSeries),
+    warmupRuns: warmupRuns,
+    iterations: iterations,
+  );
+
+  final randomResult = runBenchmark(
+    'Series access random ($randomAccessCount samples)',
+    () => sumRandomSeries(resolvedSeries, indices),
+    warmupRuns: warmupRuns,
+    iterations: iterations,
+  );
+
+  return <BenchmarkResult>[
+    ingestionResult,
+    sequentialResult,
+    randomResult,
+  ];
+}
+
 void main() {
-  final results = runAllBenchmarks();
+  final results = <BenchmarkResult>[
+    ...runAllBenchmarks(),
+    ...runTenMillionPointIngestionBenchmarks(),
+  ];
   for (final result in results) {
     final ms = result.averageMilliseconds.toStringAsFixed(2);
     print('${result.name}: ${ms}ms');

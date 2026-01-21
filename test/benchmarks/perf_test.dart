@@ -75,5 +75,43 @@ void main() {
         throwsArgumentError,
       );
     });
+
+    test('runTenMillionPointIngestionBenchmarks returns labeled results', () {
+      final results = perf.runTenMillionPointIngestionBenchmarks(
+        length: 512,
+        randomAccessCount: 128,
+        warmupRuns: 0,
+        iterations: 1,
+      );
+
+      expect(results, hasLength(3));
+      expect(
+        results.map((result) => result.name),
+        contains('Series ingestion (512 points)'),
+      );
+      expect(
+        results.map((result) => result.name),
+        contains('Series access sequential (512 points)'),
+      );
+      expect(
+        results.map((result) => result.name),
+        contains('Series access random (128 samples)'),
+      );
+    });
+
+    test('runTenMillionPointIngestionBenchmarks validates inputs', () {
+      expect(
+        () => perf.runTenMillionPointIngestionBenchmarks(length: 0),
+        throwsArgumentError,
+      );
+      expect(
+        () => perf.runTenMillionPointIngestionBenchmarks(randomAccessCount: 0),
+        throwsArgumentError,
+      );
+      expect(
+        () => perf.runTenMillionPointIngestionBenchmarks(iterations: 0),
+        throwsArgumentError,
+      );
+    });
   });
 }
