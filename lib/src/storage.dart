@@ -74,6 +74,7 @@ class ListStorage<TX, TY> implements SeriesStorage<TX, TY> {
       );
 }
 
+/// Storage for aggregated interval data using a structure-of-arrays layout.
 class IntervalStorage<TX> implements SeriesStorage<TX, double> {
   IntervalStorage({
     required List<TX> xValues,
