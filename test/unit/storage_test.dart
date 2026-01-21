@@ -1,5 +1,3 @@
-// @orchestra-task: 2
-
 /// TDD Red Phase: Storage Backend Tests
 ///
 /// This test suite defines the contract for the storage backend architecture
@@ -14,8 +12,6 @@
 /// Sentinel Values:
 /// - double.nan for missing double values
 /// - -9223372036854775808 (Int64.min) for missing int/time values
-
-@Tags(['tdd-red'])
 library;
 
 import 'package:braven_data/braven_data.dart';

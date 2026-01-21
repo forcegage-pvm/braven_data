@@ -16,6 +16,6 @@ library;
 
 // TODO: Export public API modules as they are implemented
 // export 'src/series.dart';
-// export 'src/storage.dart';
+export 'src/storage.dart';
 // export 'src/aggregation.dart';
 // export 'src/pipeline.dart';

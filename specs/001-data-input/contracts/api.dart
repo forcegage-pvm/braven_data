@@ -60,12 +60,13 @@ abstract class WindowSpec {
   factory WindowSpec.rolling(num size) => throw UnimplementedError();
 
   /// Pixel-aligned windows for rendering
-  factory WindowSpec.pixelAligned(double pixelDensity) => throw UnimplementedError();
+  factory WindowSpec.pixelAligned(double pixelDensity) =>
+      throw UnimplementedError();
 }
 
 abstract class AggregationSpec<TX> {
   WindowSpec get window;
-  Reducer get reducer;
+  Reducer<dynamic> get reducer;
 }
 
 /// Built-in reducers
