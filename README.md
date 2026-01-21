@@ -133,8 +133,10 @@ dart run test/benchmarks/perf.dart
 - API proposal: [specs/data_input_api_proposal.md](specs/data_input_api_proposal.md)
 - Data model: [specs/data-model.md](specs/data-model.md)
 - Plan: [specs/plan.md](specs/plan.md)
+
 ```
 
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
+```
