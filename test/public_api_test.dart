@@ -40,9 +40,7 @@ void main() {
 
       double identity(double value) => value;
       final Mapper<double> mapper = identity;
-      final pipeline = PipelineBuilder<double, double>()
-          .map(mapper)
-          .collapse(SeriesReducer.mean);
+      final pipeline = PipelineBuilder<double, double>().map(mapper).collapse(SeriesReducer.mean);
       final average = pipeline.executeScalar(series);
       expect(average, closeTo(208.75, 0.001));
 
@@ -57,16 +55,13 @@ void main() {
       expect(aggregated.xValues.length, 2);
       expect(aggregated.yValues.length, 2);
 
-      final normalizedPower =
-          NormalizedPowerCalculator<double>(windowSize: 2).calculate(series);
+      final normalizedPower = NormalizedPowerCalculator<double>(windowSize: 2).calculate(series);
       expect(normalizedPower, greaterThan(0));
 
-      final xPower =
-          xPowerCalculator<double>(windowSize: 2, alpha: 0.5).calculate(series);
+      final xPower = xPowerCalculator<double>(windowSize: 2, alpha: 0.5).calculate(series);
       expect(xPower, greaterThan(0));
 
-      final variabilityIndex =
-          VariabilityIndexCalculator<double>(windowSize: 2).calculate(series);
+      final variabilityIndex = VariabilityIndexCalculator<double>(windowSize: 2).calculate(series);
       expect(variabilityIndex, greaterThan(0));
     });
   });
