@@ -14,8 +14,9 @@
 /// - Potential future extraction to a separate package
 library;
 
-// TODO: Export public API modules as they are implemented
-// export 'src/series.dart';
+export 'src/aggregation.dart';
+export 'src/algorithms.dart';
+export 'src/engine.dart';
+export 'src/pipeline.dart';
+export 'src/series.dart';
 export 'src/storage.dart';
-// export 'src/aggregation.dart';
-// export 'src/pipeline.dart';
