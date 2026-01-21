@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:braven_data/src/series.dart';
 import 'package:braven_data/src/storage.dart';
 import 'package:test/test.dart';
@@ -105,6 +107,62 @@ void main() {
         ),
         throwsA(isA<ArgumentError>()),
       );
+    });
+  });
+
+  group('Series.fromTypedData', () {
+    test('creates a series from typed data lists', () {
+      final series = Series<int, double>.fromTypedData(
+        meta: const SeriesMeta(name: 'Speed', unit: 'm/s'),
+        xValues: Int64List.fromList([1, 2]),
+        yValues: Float64List.fromList([3.0, 4.0]),
+      );
+
+      expect(series.length, 2);
+      expect(series.getX(0), 1);
+      expect(series.getY(1), 4.0);
+      expect(series.stats, isNull);
+    });
+
+    test('uses a custom id when provided', () {
+      final series = Series<int, double>.fromTypedData(
+        id: 'custom-id',
+        meta: const SeriesMeta(name: 'Cadence'),
+        xValues: [1, 2],
+        yValues: [90.0, 95.0],
+      );
+
+      expect(series.id, 'custom-id');
+    });
+
+    test('auto-generates a unique id when omitted', () {
+      final seriesA = Series<int, double>.fromTypedData(
+        meta: const SeriesMeta(name: 'Power', unit: 'w'),
+        xValues: [1],
+        yValues: [200.0],
+      );
+      final seriesB = Series<int, double>.fromTypedData(
+        meta: const SeriesMeta(name: 'Power', unit: 'w'),
+        xValues: [2],
+        yValues: [220.0],
+      );
+
+      expect(seriesA.id, isNotEmpty);
+      expect(seriesB.id, isNotEmpty);
+      expect(seriesA.id, isNot(seriesB.id));
+    });
+
+    test('preserves provided stats', () {
+      const stats = SeriesStats(min: 1, max: 3, mean: 2, count: 3);
+
+      final series = Series<int, double>.fromTypedData(
+        meta: const SeriesMeta(name: 'Elevation', unit: 'm'),
+        xValues: [1, 2, 3],
+        yValues: [1.0, 2.0, 3.0],
+        stats: stats,
+      );
+
+      expect(series.stats, stats);
     });
   });
 }
