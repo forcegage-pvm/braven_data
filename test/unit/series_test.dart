@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:braven_data/src/aggregation.dart';
 import 'package:braven_data/src/series.dart';
 import 'package:braven_data/src/storage.dart';
 import 'package:test/test.dart';
@@ -249,6 +250,63 @@ void main() {
       expect(() => series.slice(-1, 1), throwsA(isA<RangeError>()));
       expect(() => series.slice(0, 3), throwsA(isA<RangeError>()));
       expect(() => series.slice(2, 1), throwsA(isA<RangeError>()));
+    });
+  });
+
+  group('Series.aggregate', () {
+    test('aggregates fixed windows with mean reducer', () {
+      final series = Series<int, double>(
+        id: 'series-10',
+        meta: const SeriesMeta(name: 'Speed', unit: 'm/s'),
+        storage: ListStorage<int, double>(
+          xValues: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          yValues: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+        ),
+      );
+
+      final aggregated = series.aggregate(
+        AggregationSpec<int>(
+          window: FixedWindowSpec(3),
+          reducer: SeriesReducer.mean,
+        ),
+      );
+
+      expect(aggregated.length, 4);
+      expect(aggregated.getX(0), 1);
+      expect(aggregated.getX(1), 4);
+      expect(aggregated.getX(2), 7);
+      expect(aggregated.getX(3), 10);
+      expect(aggregated.getY(0), 2.0);
+      expect(aggregated.getY(1), closeTo(5.0, 1e-9));
+      expect(aggregated.getY(2), 8.0);
+      expect(aggregated.getY(3), 10.0);
+      expect(aggregated.meta, same(series.meta));
+    });
+
+    test('handles partial window with max reducer', () {
+      final series = Series<int, double>(
+        id: 'series-11',
+        meta: const SeriesMeta(name: 'Power', unit: 'w'),
+        storage: ListStorage<int, double>(
+          xValues: [1, 2, 3, 4, 5],
+          yValues: [100.0, 150.0, 120.0, 180.0, 160.0],
+        ),
+      );
+
+      final aggregated = series.aggregate(
+        AggregationSpec<int>(
+          window: FixedWindowSpec(2),
+          reducer: SeriesReducer.max,
+        ),
+      );
+
+      expect(aggregated.length, 3);
+      expect(aggregated.getX(0), 1);
+      expect(aggregated.getX(1), 3);
+      expect(aggregated.getX(2), 5);
+      expect(aggregated.getY(0), 150.0);
+      expect(aggregated.getY(1), 180.0);
+      expect(aggregated.getY(2), 160.0);
     });
   });
 }
