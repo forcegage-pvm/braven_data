@@ -1,7 +1,3 @@
-// @orchestra-task: 10
-@Tags(['tdd-red'])
-library;
-
 import 'package:braven_data/src/metrics/basic_metrics.dart';
 import 'package:braven_data/src/series.dart';
 import 'package:test/test.dart';

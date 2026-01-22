@@ -1,7 +1,3 @@
-// @orchestra-task: 10
-@Tags(['tdd-red'])
-library;
-
 import 'dart:math';
 
 import 'package:braven_data/src/metrics/power_metrics.dart';

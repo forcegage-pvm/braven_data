@@ -27,5 +27,5 @@ export 'src/pipeline.dart';
 export 'src/series.dart';
 export 'src/storage.dart';
 
-// Metrics layer exports (placeholder).
-// export 'src/metrics/...';
+// Metrics layer exports.
+export 'src/metrics/metrics.dart';
