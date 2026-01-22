@@ -15,32 +15,33 @@ Complete the braven_data package end-to-end data flow: CSV file ingestion → Da
 **Testing**: dart test (unit tests in test/unit/)  
 **Target Platform**: Cross-platform Dart library (no platform-specific code)  
 **Project Type**: Single Dart package (lib/src/ structure)  
-**Performance Goals**: 
+**Performance Goals**:
+
 - Load 10,000-row CSV in <500ms
 - Full pipeline (CSV → aggregate → chart output) in <1s for 3600 points
 - Memory ≤3x raw data size for 100K points  
-**Constraints**: 
+  **Constraints**:
 - No third-party packages (pure Dart only)
 - Files must fit in memory (no streaming)
 - Single-threaded (no isolates this sprint)  
-**Scale/Scope**: 
+  **Scale/Scope**:
 - Typical: 3,600 points (1-hour activity at 1Hz)
 - Max: 200,000 points (60-hour event)
 - High-frequency burst: 120,000 points (1kHz for 2 minutes)
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Applicability | Status | Notes |
-|-----------|--------------|--------|-------|
-| I. Test-First Development | ✅ REQUIRED | ⏳ PENDING | All new classes need unit tests; TDD approach for CSV parsing |
-| II. Performance First | ✅ REQUIRED | ✅ PASS | Columnar storage (Float64List) ensures 60fps-compatible data structures; no setState concerns (library, not UI) |
-| III. Architectural Integrity | ✅ REQUIRED | ✅ PASS | Pure Dart, no platform-specific APIs, SOLID principles |
-| IV. Requirements Compliance | ✅ REQUIRED | ⏳ PENDING | tasks.md tracking during implementation |
-| V. API Consistency | ✅ REQUIRED | ✅ PASS | Following existing Series/Pipeline API patterns |
-| VI. Documentation | ✅ REQUIRED | ⏳ PENDING | All public APIs need dartdoc |
-| VII. Simplicity (KISS) | ✅ REQUIRED | ✅ PASS | Minimal dependencies, low-level typed arrays |
+| Principle                    | Applicability | Status     | Notes                                                                                                           |
+| ---------------------------- | ------------- | ---------- | --------------------------------------------------------------------------------------------------------------- |
+| I. Test-First Development    | ✅ REQUIRED   | ⏳ PENDING | All new classes need unit tests; TDD approach for CSV parsing                                                   |
+| II. Performance First        | ✅ REQUIRED   | ✅ PASS    | Columnar storage (Float64List) ensures 60fps-compatible data structures; no setState concerns (library, not UI) |
+| III. Architectural Integrity | ✅ REQUIRED   | ✅ PASS    | Pure Dart, no platform-specific APIs, SOLID principles                                                          |
+| IV. Requirements Compliance  | ✅ REQUIRED   | ⏳ PENDING | tasks.md tracking during implementation                                                                         |
+| V. API Consistency           | ✅ REQUIRED   | ✅ PASS    | Following existing Series/Pipeline API patterns                                                                 |
+| VI. Documentation            | ✅ REQUIRED   | ⏳ PENDING | All public APIs need dartdoc                                                                                    |
+| VII. Simplicity (KISS)       | ✅ REQUIRED   | ✅ PASS    | Minimal dependencies, low-level typed arrays                                                                    |
 
 **Gate Status**: ✅ PASS - No blocking violations. Pending items are implementation-phase requirements.
 
@@ -105,17 +106,18 @@ test/
 
 ## Complexity Tracking
 
-*No constitution violations requiring justification.*
+_No constitution violations requiring justification._
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| (none) | — | — |
+| --------- | ---------- | ------------------------------------ |
+| (none)    | —          | —                                    |
 
 ## Phase 0: Research Findings
 
 See [research.md](research.md) for detailed analysis.
 
 **Key Decisions**:
+
 1. CSV parsing: Manual implementation using dart:convert's LineSplitter + split(',')
 2. DateTime parsing: DateTime.parse() for ISO 8601, manual epoch conversion
 3. X-value normalization: First timestamp becomes 0.0, all others relative
@@ -131,4 +133,3 @@ See [research.md](research.md) for detailed analysis.
 ---
 
 **Next Step**: Run `/speckit.tasks` to generate implementation task breakdown.
-

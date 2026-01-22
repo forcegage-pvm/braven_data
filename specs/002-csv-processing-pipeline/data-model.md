@@ -35,15 +35,15 @@
 
 Defines how X-axis values should be interpreted.
 
-| Value | Description | Conversion |
-|-------|-------------|------------|
-| `iso8601` | ISO 8601 timestamp string | Parse → epoch → elapsed seconds |
-| `epochSeconds` | Unix timestamp (seconds) | Direct → elapsed seconds |
-| `epochMillis` | Unix timestamp (milliseconds) | ÷1000 → elapsed seconds |
-| `elapsedSeconds` | Already elapsed seconds | Direct use |
-| `elapsedMillis` | Elapsed milliseconds | ÷1000 → elapsed seconds |
-| `rowIndex` | No X column; use row number | 0, 1, 2, ... |
-| `custom` | User-provided parser | Callback function |
+| Value            | Description                   | Conversion                      |
+| ---------------- | ----------------------------- | ------------------------------- |
+| `iso8601`        | ISO 8601 timestamp string     | Parse → epoch → elapsed seconds |
+| `epochSeconds`   | Unix timestamp (seconds)      | Direct → elapsed seconds        |
+| `epochMillis`    | Unix timestamp (milliseconds) | ÷1000 → elapsed seconds         |
+| `elapsedSeconds` | Already elapsed seconds       | Direct use                      |
+| `elapsedMillis`  | Elapsed milliseconds          | ÷1000 → elapsed seconds         |
+| `rowIndex`       | No X column; use row number   | 0, 1, 2, ...                    |
+| `custom`         | User-provided parser          | Callback function               |
 
 ```dart
 enum XValueType {
@@ -63,11 +63,11 @@ enum XValueType {
 
 Supported data types for Y-value columns.
 
-| Value | Dart Type | Storage |
-|-------|-----------|---------|
-| `float64` | double | Float64List |
-| `int64` | int | Int64List |
-| `string` | String | List<String> |
+| Value     | Dart Type | Storage      |
+| --------- | --------- | ------------ |
+| `float64` | double    | Float64List  |
+| `int64`   | int       | Int64List    |
+| `string`  | String    | List<String> |
 
 ```dart
 enum FieldType {
@@ -83,12 +83,12 @@ enum FieldType {
 
 Defines a single column in the CSV schema.
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `name` | String | ✅ | Column header name |
-| `type` | FieldType | ✅ | Data type for parsing |
-| `defaultValue` | dynamic | ❌ | Value for missing/null cells |
-| `unit` | String? | ❌ | Unit annotation (e.g., "W", "bpm") |
+| Field          | Type      | Required | Description                        |
+| -------------- | --------- | -------- | ---------------------------------- |
+| `name`         | String    | ✅       | Column header name                 |
+| `type`         | FieldType | ✅       | Data type for parsing              |
+| `defaultValue` | dynamic   | ❌       | Value for missing/null cells       |
+| `unit`         | String?   | ❌       | Unit annotation (e.g., "W", "bpm") |
 
 ```dart
 class ColumnDef {
@@ -107,6 +107,7 @@ class ColumnDef {
 ```
 
 **Validation Rules**:
+
 - `name` must not be empty
 - `defaultValue` must match `type` (e.g., double for float64)
 
@@ -116,14 +117,14 @@ class ColumnDef {
 
 Defines the complete structure for parsing a CSV file.
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `xColumn` | String? | ❌ | Column name for X values (null = rowIndex) |
-| `xType` | XValueType | ✅ | How to parse X values |
-| `xFormat` | String? | ❌ | Custom format pattern (for xType.custom) |
-| `columns` | List<ColumnDef> | ✅ | Y-value column definitions |
-| `hasHeader` | bool | ❌ | First row is headers (default: true) |
-| `delimiter` | String | ❌ | Column separator (default: ',') |
+| Field       | Type            | Required | Description                                |
+| ----------- | --------------- | -------- | ------------------------------------------ |
+| `xColumn`   | String?         | ❌       | Column name for X values (null = rowIndex) |
+| `xType`     | XValueType      | ✅       | How to parse X values                      |
+| `xFormat`   | String?         | ❌       | Custom format pattern (for xType.custom)   |
+| `columns`   | List<ColumnDef> | ✅       | Y-value column definitions                 |
+| `hasHeader` | bool            | ❌       | First row is headers (default: true)       |
+| `delimiter` | String          | ❌       | Column separator (default: ',')            |
 
 ```dart
 class CsvSchema {
@@ -146,6 +147,7 @@ class CsvSchema {
 ```
 
 **Validation Rules**:
+
 - If `xType` is not `rowIndex`, `xColumn` must be provided
 - `columns` must not be empty
 - All column names must be unique
@@ -156,12 +158,12 @@ class CsvSchema {
 
 Columnar container for parsed CSV data.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `_columns` | Map<String, List> | Internal columnar storage |
-| `schema` | CsvSchema | Original parsing schema |
-| `rowCount` | int | Number of data rows |
-| `columnNames` | List<String> | All column names including X |
+| Field         | Type              | Description                  |
+| ------------- | ----------------- | ---------------------------- |
+| `_columns`    | Map<String, List> | Internal columnar storage    |
+| `schema`      | CsvSchema         | Original parsing schema      |
+| `rowCount`    | int               | Number of data rows          |
+| `columnNames` | List<String>      | All column names including X |
 
 ```dart
 class DataFrame {
@@ -173,12 +175,13 @@ class DataFrame {
 
   List<T> get<T>(String columnName);
   List<double> getXValues();
-  
+
   Series<double, double> toSeries(String yColumn, {SeriesMeta? meta});
 }
 ```
 
 **Lifecycle**:
+
 1. Created by `CsvLoader.load()`
 2. Immutable after creation
 3. Series extracted via `toSeries()`
@@ -189,13 +192,13 @@ class DataFrame {
 
 Output structure compatible with BravenChartPlus.
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `x` | double | ✅ | X-axis value (elapsed seconds) |
-| `y` | double | ✅ | Y-axis value |
-| `timestamp` | DateTime? | ❌ | Original absolute timestamp |
-| `label` | String? | ❌ | Tooltip/annotation text |
-| `metadata` | Map<String, dynamic>? | ❌ | Extra data (min, max, count) |
+| Field       | Type                  | Required | Description                    |
+| ----------- | --------------------- | -------- | ------------------------------ |
+| `x`         | double                | ✅       | X-axis value (elapsed seconds) |
+| `y`         | double                | ✅       | Y-axis value                   |
+| `timestamp` | DateTime?             | ❌       | Original absolute timestamp    |
+| `label`     | String?               | ❌       | Tooltip/annotation text        |
+| `metadata`  | Map<String, dynamic>? | ❌       | Extra data (min, max, count)   |
 
 ```dart
 class ChartDataPoint {
@@ -221,11 +224,11 @@ class ChartDataPoint {
 
 Specifies where output points align relative to their window.
 
-| Value | Description | Use Case |
-|-------|-------------|----------|
-| `start` | X = first point in window | Fixed bins, histograms |
-| `center` | X = midpoint of window | Signal processing |
-| `end` | X = last point in window | Trailing averages (default) |
+| Value    | Description               | Use Case                    |
+| -------- | ------------------------- | --------------------------- |
+| `start`  | X = first point in window | Fixed bins, histograms      |
+| `center` | X = midpoint of window    | Signal processing           |
+| `end`    | X = last point in window  | Trailing averages (default) |
 
 ```dart
 enum WindowAlignment {
@@ -251,6 +254,7 @@ abstract class SeriesMetric<T> {
 ```
 
 **Built-in Implementations**:
+
 - `NormalizedPowerMetric` → double
 - `XPowerMetric` → double
 - `VariabilityIndexMetric` → double
@@ -261,15 +265,15 @@ abstract class SeriesMetric<T> {
 
 ## Relationships
 
-| From | To | Relationship | Cardinality |
-|------|-----|--------------|-------------|
-| CsvSchema | ColumnDef | contains | 1:N |
-| CsvSchema | XValueType | uses | 1:1 |
-| CsvLoader | CsvSchema | requires | 1:1 |
-| CsvLoader | DataFrame | produces | 1:1 |
-| DataFrame | Series | extracts | 1:N |
-| Series | ChartDataPoint | converts to | 1:N |
-| Series | SeriesMetric | computed by | N:M |
+| From      | To             | Relationship | Cardinality |
+| --------- | -------------- | ------------ | ----------- |
+| CsvSchema | ColumnDef      | contains     | 1:N         |
+| CsvSchema | XValueType     | uses         | 1:1         |
+| CsvLoader | CsvSchema      | requires     | 1:1         |
+| CsvLoader | DataFrame      | produces     | 1:1         |
+| DataFrame | Series         | extracts     | 1:N         |
+| Series    | ChartDataPoint | converts to  | 1:N         |
+| Series    | SeriesMetric   | computed by  | N:M         |
 
 ---
 
@@ -295,11 +299,11 @@ abstract class SeriesMetric<T> {
 
 ## Data Volume Assumptions
 
-| Scenario | Rows | Columns | Memory (Est.) |
-|----------|------|---------|---------------|
-| 1-hour activity (1Hz) | 3,600 | 10 | ~600 KB |
-| 10-hour activity | 36,000 | 10 | ~6 MB |
-| 60-hour ultra event | 216,000 | 10 | ~35 MB |
-| High-freq burst (1kHz, 2min) | 120,000 | 5 | ~10 MB |
+| Scenario                     | Rows    | Columns | Memory (Est.) |
+| ---------------------------- | ------- | ------- | ------------- |
+| 1-hour activity (1Hz)        | 3,600   | 10      | ~600 KB       |
+| 10-hour activity             | 36,000  | 10      | ~6 MB         |
+| 60-hour ultra event          | 216,000 | 10      | ~35 MB        |
+| High-freq burst (1kHz, 2min) | 120,000 | 5       | ~10 MB        |
 
 All scenarios fit comfortably in memory per spec constraints.

@@ -6,6 +6,7 @@
 ## Overview
 
 This guide shows how to use the CSV Processing Pipeline to:
+
 1. Load a CSV file into a DataFrame
 2. Extract Series for processing
 3. Apply aggregation and smoothing

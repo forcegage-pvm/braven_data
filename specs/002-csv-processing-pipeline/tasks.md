@@ -6,11 +6,13 @@
 **Organization**: Tasks grouped by user story for independent implementation and testing
 
 ## Format: `[ID] [P?] [Story] Description`
+
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - Include exact file paths in descriptions
 
 ## Path Conventions
+
 - **Source**: `lib/src/` with subdirectories (csv/, dataframe/, output/, metrics/)
 - **Tests**: `test/unit/` with subdirectories matching source structure
 - **Integration**: `test/integration/`
@@ -244,13 +246,13 @@ Phase 2: Foundational ───────────────────�
 
 ### User Story Dependencies
 
-| Story | Depends On | Can Parallelize With |
-|-------|-----------|---------------------|
-| US1 (P1) | Phase 2 only | US2, US3, US4, US5 (after Phase 2) |
-| US2 (P2) | Phase 2 only | US1, US3, US4, US5 (after Phase 2) |
-| US3 (P3) | Phase 2, needs Series (US1 for real data) | US2, US4, US5 |
-| US4 (P4) | Phase 2, needs Series | US1, US2, US3, US5 |
-| US5 (P5) | US1 (extends loader) | — |
+| Story    | Depends On                                | Can Parallelize With               |
+| -------- | ----------------------------------------- | ---------------------------------- |
+| US1 (P1) | Phase 2 only                              | US2, US3, US4, US5 (after Phase 2) |
+| US2 (P2) | Phase 2 only                              | US1, US3, US4, US5 (after Phase 2) |
+| US3 (P3) | Phase 2, needs Series (US1 for real data) | US2, US4, US5                      |
+| US4 (P4) | Phase 2, needs Series                     | US1, US2, US3, US5                 |
+| US5 (P5) | US1 (extends loader)                      | —                                  |
 
 ### Within Each Phase
 
@@ -262,48 +264,53 @@ Phase 2: Foundational ───────────────────�
 ### Parallel Opportunities per Phase
 
 **Phase 1 (Setup)**:
+
 - T003, T004, T005 can run in parallel (different enum files)
 
 **Phase 2 (Foundation)**:
+
 - T007, T008 can run in parallel (different test files)
 - T009, T011 can run in parallel after tests written
 
 **Phase 3 (US1)**:
+
 - T013, T014, T015, T016, T017 can run in parallel (different test files)
 - T018, T019 can run in parallel (different source files)
 
 **Phases 4-7**:
+
 - All test tasks within each phase can run in parallel
 - Implementation tasks follow test completion
 
 **Phase 8**:
+
 - T068, T069, T070 can run in parallel
 
 ---
 
 ## Task Count Summary
 
-| Phase | Description | Task Count |
-|-------|-------------|------------|
-| Phase 1 | Setup | 6 |
-| Phase 2 | Foundational | 6 |
-| Phase 3 | US1 - CSV Loading (MVP) | 14 |
-| Phase 4 | US2 - Rolling Windows | 9 |
-| Phase 5 | US3 - Chart Output | 11 |
-| Phase 6 | US4 - Scalar Metrics | 15 |
-| Phase 7 | US5 - Format Detection | 7 |
-| Phase 8 | Integration & Polish | 9 |
-| **TOTAL** | | **77** |
+| Phase     | Description             | Task Count |
+| --------- | ----------------------- | ---------- |
+| Phase 1   | Setup                   | 6          |
+| Phase 2   | Foundational            | 6          |
+| Phase 3   | US1 - CSV Loading (MVP) | 14         |
+| Phase 4   | US2 - Rolling Windows   | 9          |
+| Phase 5   | US3 - Chart Output      | 11         |
+| Phase 6   | US4 - Scalar Metrics    | 15         |
+| Phase 7   | US5 - Format Detection  | 7          |
+| Phase 8   | Integration & Polish    | 9          |
+| **TOTAL** |                         | **77**     |
 
 ### Tasks per User Story
 
-| User Story | Priority | Task Count | Independent? |
-|------------|----------|------------|--------------|
-| US1 | P1 (MVP) | 14 | ✅ Yes |
-| US2 | P2 | 9 | ✅ Yes |
-| US3 | P3 | 11 | ✅ Yes |
-| US4 | P4 | 15 | ✅ Yes |
-| US5 | P5 | 7 | Depends on US1 |
+| User Story | Priority | Task Count | Independent?   |
+| ---------- | -------- | ---------- | -------------- |
+| US1        | P1 (MVP) | 14         | ✅ Yes         |
+| US2        | P2       | 9          | ✅ Yes         |
+| US3        | P3       | 11         | ✅ Yes         |
+| US4        | P4       | 15         | ✅ Yes         |
+| US5        | P5       | 7          | Depends on US1 |
 
 ---
 
@@ -319,26 +326,26 @@ Phase 2: Foundational ───────────────────�
 
 ### Incremental Delivery
 
-| Increment | Phases | Cumulative Value |
-|-----------|--------|------------------|
-| MVP | 1 + 2 + 3 | CSV loading, Series extraction |
-| +US2 | + 4 | Duration-based rolling windows |
-| +US3 | + 5 | Chart-ready output |
-| +US4 | + 6 | Scalar metrics (NP, xP, VI) |
-| +US5 | + 7 | Auto-detect timestamp formats |
-| Complete | + 8 | Fully validated, documented |
+| Increment | Phases    | Cumulative Value               |
+| --------- | --------- | ------------------------------ |
+| MVP       | 1 + 2 + 3 | CSV loading, Series extraction |
+| +US2      | + 4       | Duration-based rolling windows |
+| +US3      | + 5       | Chart-ready output             |
+| +US4      | + 6       | Scalar metrics (NP, xP, VI)    |
+| +US5      | + 7       | Auto-detect timestamp formats  |
+| Complete  | + 8       | Fully validated, documented    |
 
 ### Success Criteria Mapping
 
-| Criterion | Validated In | Phase |
-|-----------|-------------|-------|
-| SC-001 (10K rows < 500ms) | T069 | 8 |
-| SC-002 (Full pipeline < 1s) | T069 | 8 |
-| SC-003 (Memory ≤ 3x) | T069 | 8 |
-| SC-004 (Garmin CSV test passes) | T068 | 8 |
-| SC-005 (Custom metric < 20 lines) | T046 | 6 |
-| SC-006 (Duration windows correct) | T028, T029 | 4 |
-| SC-007 (Zero analyze warnings) | T026, T035, T045, T060, T067, T072 | All |
+| Criterion                         | Validated In                       | Phase |
+| --------------------------------- | ---------------------------------- | ----- |
+| SC-001 (10K rows < 500ms)         | T069                               | 8     |
+| SC-002 (Full pipeline < 1s)       | T069                               | 8     |
+| SC-003 (Memory ≤ 3x)              | T069                               | 8     |
+| SC-004 (Garmin CSV test passes)   | T068                               | 8     |
+| SC-005 (Custom metric < 20 lines) | T046                               | 6     |
+| SC-006 (Duration windows correct) | T028, T029                         | 4     |
+| SC-007 (Zero analyze warnings)    | T026, T035, T045, T060, T067, T072 | All   |
 
 ---
 

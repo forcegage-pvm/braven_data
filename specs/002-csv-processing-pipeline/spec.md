@@ -12,7 +12,7 @@ This feature completes the braven_data package by implementing the end-to-end da
 
 ---
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Load CSV and Extract Series (Priority: P1)
 
@@ -108,7 +108,7 @@ A researcher has CSV files from different instruments—some use ISO 8601 timest
 
 ---
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -159,7 +159,7 @@ A researcher has CSV files from different instruments—some use ISO 8601 timest
 
 ---
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
@@ -186,7 +186,7 @@ A researcher has CSV files from different instruments—some use ISO 8601 timest
 ## Dependencies
 
 - Sprint 001 implementation (Series, TypedDataStorage, SeriesReducer, PipelineBuilder)
-- Reference implementations in specs/_base/002-data-enchancements/reference_implementations/
+- Reference implementations in specs/\_base/002-data-enchancements/reference_implementations/
 - Sample test data: data/tp-2023646...core_records.csv
 
 ---
@@ -209,4 +209,3 @@ A researcher has CSV files from different instruments—some use ISO 8601 timest
 - [chart_data_point.dart](../_base/002-data-enchancements/reference_implementations/chart_data_point.dart) - Target output structure
 - [csv_ingestion_example.dart](../_base/002-data-enchancements/reference_implementations/csv_ingestion_example.dart) - Reference implementation
 - [power_metrics.dart](../_base/002-data-enchancements/reference_implementations/power_metrics.dart) - Metric interface examples
-
