@@ -20,3 +20,16 @@ export 'src/engine.dart';
 export 'src/pipeline.dart';
 export 'src/series.dart';
 export 'src/storage.dart';
+
+// CSV processing pipeline exports (placeholder).
+// export 'src/csv/x_value_type.dart';
+// export 'src/csv/field_type.dart';
+
+// DataFrame layer exports (placeholder).
+// export 'src/dataframe/...';
+
+// Output layer exports (placeholder).
+// export 'src/output/window_alignment.dart';
+
+// Metrics layer exports (placeholder).
+// export 'src/metrics/...';
