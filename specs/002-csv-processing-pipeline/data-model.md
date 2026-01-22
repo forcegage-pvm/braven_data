@@ -8,7 +8,7 @@
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  CsvSchema  │────▶│  CsvLoader  │────▶│  DataFrame  │
+│ DelimitedSchema │────▶│ DelimitedLoader │────▶│  DataFrame  │
 └─────────────┘     └─────────────┘     └─────────────┘
        │                                       │
        ▼                                       ▼
@@ -113,7 +113,7 @@ class ColumnDef {
 
 ---
 
-### 4. CsvSchema (Aggregate Root)
+### 4. DelimitedSchema (Aggregate Root)
 
 Defines the complete structure for parsing a CSV file.
 
@@ -127,7 +127,7 @@ Defines the complete structure for parsing a CSV file.
 | `delimiter` | String          | ❌       | Column separator (default: ',')            |
 
 ```dart
-class CsvSchema {
+class DelimitedSchema {
   final String? xColumn;
   final XValueType xType;
   final String? xFormat;
@@ -135,7 +135,7 @@ class CsvSchema {
   final bool hasHeader;
   final String delimiter;
 
-  const CsvSchema({
+  const DelimitedSchema({
     this.xColumn,
     required this.xType,
     this.xFormat,
@@ -161,14 +161,14 @@ Columnar container for parsed CSV data.
 | Field         | Type              | Description                  |
 | ------------- | ----------------- | ---------------------------- |
 | `_columns`    | Map<String, List> | Internal columnar storage    |
-| `schema`      | CsvSchema         | Original parsing schema      |
+| `schema`      | DelimitedSchema   | Original parsing schema      |
 | `rowCount`    | int               | Number of data rows          |
 | `columnNames` | List<String>      | All column names including X |
 
 ```dart
 class DataFrame {
   final Map<String, List<dynamic>> _columns;
-  final CsvSchema schema;
+  final DelimitedSchema schema;
 
   int get rowCount;
   List<String> get columnNames;
@@ -182,7 +182,7 @@ class DataFrame {
 
 **Lifecycle**:
 
-1. Created by `CsvLoader.load()`
+1. Created by `DelimitedLoader.load()`
 2. Immutable after creation
 3. Series extracted via `toSeries()`
 
@@ -265,15 +265,15 @@ abstract class SeriesMetric<T> {
 
 ## Relationships
 
-| From      | To             | Relationship | Cardinality |
-| --------- | -------------- | ------------ | ----------- |
-| CsvSchema | ColumnDef      | contains     | 1:N         |
-| CsvSchema | XValueType     | uses         | 1:1         |
-| CsvLoader | CsvSchema      | requires     | 1:1         |
-| CsvLoader | DataFrame      | produces     | 1:1         |
-| DataFrame | Series         | extracts     | 1:N         |
-| Series    | ChartDataPoint | converts to  | 1:N         |
-| Series    | SeriesMetric   | computed by  | N:M         |
+| From            | To              | Relationship | Cardinality |
+| --------------- | --------------- | ------------ | ----------- |
+| DelimitedSchema | ColumnDef       | contains     | 1:N         |
+| DelimitedSchema | XValueType      | uses         | 1:1         |
+| DelimitedLoader | DelimitedSchema | requires     | 1:1         |
+| DelimitedLoader | DataFrame       | produces     | 1:1         |
+| DataFrame       | Series          | extracts     | 1:N         |
+| Series          | ChartDataPoint  | converts to  | 1:N         |
+| Series          | SeriesMetric    | computed by  | N:M         |
 
 ---
 
@@ -282,7 +282,7 @@ abstract class SeriesMetric<T> {
 ### DataFrame Lifecycle
 
 ```
-[Not Loaded] ──CsvLoader.load()──▶ [Loaded] ──toSeries()──▶ [Series Extracted]
+[Not Loaded] ──DelimitedLoader.load()──▶ [Loaded] ──toSeries()──▶ [Series Extracted]
                                        │
                                        └──get<T>()──▶ [Column Accessed]
 ```

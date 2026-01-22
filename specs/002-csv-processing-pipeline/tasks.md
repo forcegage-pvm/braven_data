@@ -41,12 +41,12 @@
 ### Foundation Tests (TDD)
 
 - [ ] T007 [P] Write unit tests for `ColumnDef` in `test/unit/csv/column_def_test.dart` (validation, construction, defaults)
-- [ ] T008 [P] Write unit tests for `CsvSchema` in `test/unit/csv/csv_schema_test.dart` (validation rules, builder pattern)
+- [ ] T008 [P] Write unit tests for `DelimitedSchema` in `test/unit/csv/csv_schema_test.dart` (validation rules, builder pattern)
 
 ### Foundation Implementation
 
 - [ ] T009 [P] Implement `ColumnDef` class in `lib/src/csv/column_def.dart` (name, type, defaultValue, unit)
-- [ ] T010 Implement `CsvSchema` class in `lib/src/csv/schema.dart` (imports XValueType, FieldType from T003/T004; defines xColumn, xType, columns, hasHeader, delimiter)
+- [ ] T010 Implement `DelimitedSchema` class in `lib/src/csv/schema.dart` (imports XValueType, FieldType from T003/T004; defines xColumn, xType, columns, hasHeader, delimiter)
 - [ ] T011 [P] Create barrel export file `lib/src/csv/csv.dart` exporting all CSV types
 - [ ] T012 Verify T007-T008 tests pass with `dart test test/unit/csv/`
 
@@ -64,7 +64,7 @@
 
 - [ ] T013 [P] [US1] Write parser unit tests in `test/unit/csv/parser_test.dart` (line splitting, field parsing, quoted values, empty values, non-monotonic timestamps preserved)
 - [ ] T014 [P] [US1] Write X-value parsing tests in `test/unit/csv/x_value_parser_test.dart` (ISO 8601, epoch seconds, epoch millis, elapsed, rowIndex)
-- [ ] T015 [P] [US1] Write CsvLoader tests in `test/unit/csv/loader_test.dart` (loadString, schema validation, error handling, malformed numeric values → NaN/default)
+- [ ] T015 [P] [US1] Write DelimitedLoader tests in `test/unit/csv/loader_test.dart` (loadString, schema validation, error handling, malformed numeric values → NaN/default)
 - [ ] T016 [P] [US1] Write DataFrame tests in `test/unit/dataframe/dataframe_test.dart` (construction, get<T>, getXValues, columnNames, rowCount)
 - [ ] T017 [P] [US1] Write Series extraction tests in `test/unit/dataframe/series_extraction_test.dart` (toSeries, X normalization, metadata)
 
@@ -73,7 +73,7 @@
 - [ ] T018 [P] [US1] Implement CSV parser utilities in `lib/src/csv/parser.dart` (line splitting, field parsing)
 - [ ] T019 [P] [US1] Implement X-value parser in `lib/src/csv/x_value_parser.dart` (all XValueType conversions)
 - [ ] T020 [US1] Implement `DataFrame` class in `lib/src/dataframe/dataframe.dart` (columnar storage, typed accessors)
-- [ ] T021 [US1] Implement `CsvLoader` class in `lib/src/csv/loader.dart` (loadString, load async)
+- [ ] T021 [US1] Implement `DelimitedLoader` class in `lib/src/csv/loader.dart` (loadString, load async)
 - [ ] T022 [US1] Add `toSeries()` method to DataFrame in `lib/src/dataframe/dataframe.dart` (X normalization, zero-copy)
 - [ ] T023 [US1] Update barrel exports: `lib/src/csv/csv.dart`, create `lib/src/dataframe/dataframe.dart` barrel
 - [ ] T024 [US1] Update `lib/braven_data.dart` to export csv and dataframe modules
@@ -187,7 +187,7 @@
 ### Implementation for User Story 5
 
 - [ ] T063 [US5] Implement `XValueDetector` class in `lib/src/csv/x_value_detector.dart` (pattern-based format detection)
-- [ ] T064 [US5] Integrate auto-detection into `CsvLoader` when `xType` is not explicitly specified in `lib/src/csv/loader.dart`
+- [ ] T064 [US5] Integrate auto-detection into `DelimitedLoader` when `xType` is not explicitly specified in `lib/src/csv/loader.dart`
 - [ ] T065 [US5] Update barrel exports in `lib/src/csv/csv.dart`
 - [ ] T066 [US5] Verify T061-T062 tests pass with `dart test test/unit/csv/x_value_detector_test.dart`
 - [ ] T067 [US5] Run `dart analyze` and fix all issues

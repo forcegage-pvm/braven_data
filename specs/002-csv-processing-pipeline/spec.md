@@ -149,7 +149,7 @@ A researcher has CSV files from different instruments—some use ISO 8601 timest
 
 ### Key Entities
 
-- **CsvSchema**: Defines the structure of a CSV file—X column, X type, and list of Y columns with their data types
+- **DelimitedSchema**: Defines the structure of a delimited text file—X column, X type, and list of Y columns with their data types
 - **DataFrame**: Columnar container holding parsed CSV data; provides typed access to columns by name
 - **Series<TX, TY>**: Time-indexed data sequence with X and Y values; the primary unit of processing
 - **ChartDataPoint**: Output structure compatible with BravenChartPlus; contains x, y, and optional metadata

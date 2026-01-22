@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:braven_data/src/aggregation.dart';
 import 'package:braven_data/src/csv/column_def.dart';
-import 'package:braven_data/src/csv/csv_schema.dart';
+import 'package:braven_data/src/csv/delimited_schema.dart';
 import 'package:braven_data/src/csv/field_type.dart';
 import 'package:braven_data/src/csv/loader.dart';
 import 'package:braven_data/src/csv/x_value_type.dart';
@@ -19,7 +19,7 @@ void main() {
       final csv = _buildCsv(rowCount: 10000);
 
       final stopwatch = Stopwatch()..start();
-      final dataframe = CsvLoader.loadString(csv, schema);
+      final dataframe = DelimitedLoader.loadString(csv, schema);
       final series = dataframe.toSeries('power');
       stopwatch.stop();
 
@@ -32,7 +32,7 @@ void main() {
       final csv = _buildCsv(rowCount: 3600);
 
       final stopwatch = Stopwatch()..start();
-      final dataframe = CsvLoader.loadString(csv, schema);
+      final dataframe = DelimitedLoader.loadString(csv, schema);
       final series = dataframe.toSeries('power');
       final aggregated = series.aggregate(
         AggregationSpec<double>(
@@ -60,7 +60,7 @@ void main() {
       final allowedBytes = rawBytes * 3;
 
       final rssBefore = ProcessInfo.currentRss;
-      final dataframe = CsvLoader.loadString(csv, schema);
+      final dataframe = DelimitedLoader.loadString(csv, schema);
       final series = dataframe.toSeries('power');
       final aggregated = series.aggregate(
         AggregationSpec<double>(
@@ -79,8 +79,8 @@ void main() {
   });
 }
 
-CsvSchema _schema() {
-  return CsvSchema(
+DelimitedSchema _schema() {
+  return DelimitedSchema(
     hasHeader: true,
     delimiter: ',',
     xColumn: 'timestamp',

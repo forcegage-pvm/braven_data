@@ -46,7 +46,7 @@ import 'package:braven_data/braven_data.dart';
 
 void main() {
   // Define schema for your CSV format
-  final schema = CsvSchema(
+  final schema = DelimitedSchema(
     xColumn: 'timestamp',
     xType: XValueType.iso8601,  // Parses ISO 8601 timestamps
     columns: [
@@ -64,7 +64,7 @@ timestamp,power,heart_rate,speed
 2024-01-15T10:00:02Z,248,146,8.4
 ''';
 
-  final dataFrame = CsvLoader.loadString(csvContent, schema);
+  final dataFrame = DelimitedLoader.loadString(csvContent, schema);
   print('Loaded ${dataFrame.rowCount} rows');
   print('Columns: ${dataFrame.columnNames}');
 }
@@ -294,7 +294,7 @@ import 'package:braven_data/braven_data.dart';
 
 Future<void> main() async {
   // 1. Define schema for Garmin CSV export
-  final schema = CsvSchema(
+  final schema = DelimitedSchema(
     xColumn: 'timestamp',
     xType: XValueType.iso8601,
     columns: [
@@ -307,7 +307,7 @@ Future<void> main() async {
 
   // 2. Load the CSV file
   final csvContent = await File('ride.csv').readAsString();
-  final df = CsvLoader.loadString(csvContent, schema);
+  final df = DelimitedLoader.loadString(csvContent, schema);
   print('Loaded ${df.rowCount} data points');
 
   // 3. Extract power Series

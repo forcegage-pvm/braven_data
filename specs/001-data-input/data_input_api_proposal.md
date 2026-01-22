@@ -263,7 +263,7 @@ class RenderReadyData {
 
 ```dart
 // 1. User loads massive dataset
-var rawSeries = await CsvLoader.load("sensor_logs.csv");
+var rawSeries = await DelimitedLoader.load("sensor_logs.csv");
 
 // 2. Pipeline (runs in Isolate usually)
 var viewSeries = SeriesPipeline(rawSeries)
@@ -336,7 +336,7 @@ We do not feed the CSV directly to the chart. We **Explode** the table into Colu
 We define how to read the file **once**.
 
 ```dart
-final schema = CsvSchema(
+final schema = DelimitedSchema(
   xColumn: "timestamp",
   xType: DataType.float64, // or DataType.timestamp
   columns: [
@@ -353,7 +353,7 @@ The loader reads the file line-by-line (or chunk-by-chunk) and populates **Colum
 
 ```dart
 // Result is a "DataFrame" - a collection of unrelated columns aligned by index
-DataFrame table = await CsvLoader.load("sensor_logs.csv", schema);
+DataFrame table = await DelimitedLoader.load("sensor_logs.csv", schema);
 ```
 
 **Step 3: Series Extraction**
@@ -440,7 +440,7 @@ timestamp,                  power, heart_rate, cadence
 ```dart
 void main() async {
   // 1. Define Schema (Once per file type)
-  final schema = CsvSchema(
+  final schema = DelimitedSchema(
     dateColumn: "timestamp",
     columns: [
       ColumnDef("power", FieldType.float),
@@ -449,7 +449,7 @@ void main() async {
   );
 
   // 2. Load Data (Streamed/Buffered)
-  final table = await CsvLoader.load("data/GarminPing.csv", schema);
+  final table = await DelimitedLoader.load("data/GarminPing.csv", schema);
 
   // 3. Extract Series (Zero-Copy Views)
   final powerSeries = Series.fromColumn(

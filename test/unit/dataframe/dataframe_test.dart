@@ -1,5 +1,5 @@
 import 'package:braven_data/src/csv/column_def.dart';
-import 'package:braven_data/src/csv/csv_schema.dart';
+import 'package:braven_data/src/csv/delimited_schema.dart';
 import 'package:braven_data/src/csv/field_type.dart';
 import 'package:braven_data/src/csv/x_value_type.dart';
 import 'package:braven_data/src/dataframe/dataframe.dart';
@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 void main() {
   group('DataFrame', () {
     test('rowCount returns number of data rows', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,
         columns: [
@@ -28,7 +28,7 @@ void main() {
     });
 
     test('columnNames includes all columns', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,
         columns: [
@@ -48,7 +48,7 @@ void main() {
     });
 
     test('get<T> returns typed column data', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,
         columns: [
@@ -69,7 +69,7 @@ void main() {
     });
 
     test('get<T> throws for unknown column', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,
         columns: [
@@ -89,7 +89,7 @@ void main() {
     });
 
     test('getXValues returns X column as doubles', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,
         columns: [
@@ -109,7 +109,7 @@ void main() {
     });
 
     test('getXValues returns row indices when xType is rowIndex', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xType: XValueType.rowIndex,
         columns: [
           ColumnDef(name: 'power', type: FieldType.float64),

@@ -1,19 +1,24 @@
 import '../dataframe/dataframe.dart';
 import 'column_def.dart';
-import 'csv_schema.dart';
+import 'delimited_schema.dart';
 import 'field_type.dart';
 import 'parser.dart';
 import 'x_value_type.dart';
 
-/// Loads CSV content into a [DataFrame] using a [CsvSchema].
-class CsvLoader {
-  /// Parses CSV [content] according to the [schema] and returns a [DataFrame].
+/// Loads delimited text content into a [DataFrame] using a [DelimitedSchema].
+class DelimitedLoader {
+  /// Parses delimited [content] according to the [schema] and returns a [DataFrame].
   ///
   /// The [schema] defines the structure, delimiter, X-value type, and columns.
+  /// If [delimiter] is provided, it overrides the schema delimiter.
   ///
-  /// Throws [FormatException] if the CSV content is empty or malformed.
+  /// Throws [FormatException] if the content is empty or malformed.
   /// Throws [ArgumentError] if the schema's xColumn is not found in headers.
-  static DataFrame loadString(String content, CsvSchema schema) {
+  static DataFrame loadString(
+    String content,
+    DelimitedSchema schema, {
+    String? delimiter,
+  }) {
     if (content.trim().isEmpty) {
       throw const FormatException('CSV content is empty');
     }
@@ -25,9 +30,10 @@ class CsvLoader {
 
     var lineIndex = 0;
     List<String>? headers;
+    final effectiveDelimiter = delimiter ?? schema.delimiter;
 
     if (schema.hasHeader) {
-      headers = CsvParser.parseFields(lines.first, delimiter: schema.delimiter);
+      headers = CsvParser.parseFields(lines.first, delimiter: effectiveDelimiter);
       lineIndex = 1;
       if (schema.xColumn != null && !headers.contains(schema.xColumn)) {
         throw ArgumentError('xColumn not found in headers');
@@ -40,7 +46,7 @@ class CsvLoader {
       if (line.isEmpty && lineIndex == lines.length - 1) {
         continue;
       }
-      final fields = CsvParser.parseFields(line, delimiter: schema.delimiter);
+      final fields = CsvParser.parseFields(line, delimiter: effectiveDelimiter);
       _processRow(fields, schema, headers, columns);
     }
 
@@ -48,7 +54,7 @@ class CsvLoader {
   }
 
   static Map<String, List<dynamic>> _initializeColumns(
-    CsvSchema schema,
+    DelimitedSchema schema,
     List<String>? headers,
   ) {
     final columns = <String, List<dynamic>>{};
@@ -86,7 +92,7 @@ class CsvLoader {
 
   static void _processRow(
     List<String> fields,
-    CsvSchema schema,
+    DelimitedSchema schema,
     List<String>? headers,
     Map<String, List<dynamic>> columns,
   ) {
@@ -137,7 +143,7 @@ class CsvLoader {
     }
   }
 
-  static int _expectedFieldCount(CsvSchema schema, int actual) {
+  static int _expectedFieldCount(DelimitedSchema schema, int actual) {
     final baseCount = schema.columns.length + (schema.xType != XValueType.rowIndex && schema.xColumn != null ? 1 : 0);
     if (schema.xType == XValueType.rowIndex && schema.xColumn == null) {
       if (actual == baseCount || actual == baseCount + 1) {
@@ -147,7 +153,7 @@ class CsvLoader {
     return baseCount;
   }
 
-  static ColumnDef? _findColumnDef(CsvSchema schema, String name) {
+  static ColumnDef? _findColumnDef(DelimitedSchema schema, String name) {
     for (final column in schema.columns) {
       if (column.name == name) {
         return column;

@@ -102,7 +102,7 @@ User: ok this is progress, now explain to me, in your example:
 
 ```dart
 // 1. User loads massive dataset
-var rawSeries = await CsvLoader.load("sensor_logs.csv");
+var rawSeries = await DelimitedLoader.load("sensor_logs.csv");
 
 // 2. Pipeline (runs in Isolate usually)
 var viewSeries = SeriesPipeline(rawSeries)
@@ -177,7 +177,7 @@ I have analyzed the provided CSV file (`tp-2023646...core_records.csv`) and crea
 
 I've drafted a conceptual Dart file that demonstrates how the new API handles this specific file to extract meaningful metrics:
 
-1.  **Ingestion**: Defines a `CsvSchema` to map `timestamp`, `power`, and `heart_rate`.
+1.  **Ingestion**: Defines a `DelimitedSchema` to map `timestamp`, `power`, and `heart_rate`.
 2.  **Smoothing (30s Power)**: Uses a **sliding window** pipeline (`WindowSpec.sliding(30s)`) with `mean` reduction to smooth out pedal stroke variability.
 3.  **Peak Analysis (Max Power)**: Uses a **fixed window** pipeline (`WindowSpec.fixed(1m)`) with `max` reduction to find sprint peaks per minute.
 4.  **Trend Analysis (HR Drift)**: Uses a 5-minute fixed window with min/max/mean to visualize heart rate intervals.
@@ -678,7 +678,7 @@ chart.add([
 1.  **Zero-Copy Efficiency**: The `rolling` pipeline can optimize by only determining start/end indices of the source buffer, rather than copying data for every window.
 2.  **Extensibility**: If you invent a new metric (e.g., "BravenPower"), you just write a `BravenPowerReducer` class and use it immediately via `.reduce(const BravenPowerReducer())`.
 3.  **Separation of Concerns**:
-    - **Ingestion**: `CsvLoader` handles parsing.
+    - **Ingestion**: `DelimitedLoader` handles parsing.
     - **Math**: `SeriesPipeline` handles windowing/math.
     - **Rendering**: `LineSeries` handles drawing. The renderer is "dumb" and fast.
 

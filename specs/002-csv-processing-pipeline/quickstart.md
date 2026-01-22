@@ -22,7 +22,7 @@ This guide shows how to use the CSV Processing Pipeline to:
 import 'package:braven_data/braven_data.dart';
 
 // Define how to parse your CSV
-final schema = CsvSchema(
+final schema = DelimitedSchema(
   xColumn: 'timestamp',
   xType: XValueType.iso8601,
   columns: [
@@ -37,10 +37,10 @@ final schema = CsvSchema(
 
 ```dart
 // From file
-final df = await CsvLoader.load('data/cycling_activity.csv', schema);
+final df = await DelimitedLoader.load('data/cycling_activity.csv', schema);
 
 // Or from string content
-final df = CsvLoader.loadString(csvContent, schema);
+final df = DelimitedLoader.loadString(csvContent, schema);
 
 // Check what we loaded
 print('Rows: ${df.rowCount}');
@@ -136,7 +136,7 @@ import 'package:braven_data/braven_data.dart';
 
 Future<void> analyzeRide(String csvPath) async {
   // 1. DEFINE SCHEMA for Garmin FIT export
-  final schema = CsvSchema(
+  final schema = DelimitedSchema(
     xColumn: 'timestamp',
     xType: XValueType.iso8601,
     columns: [
@@ -149,7 +149,7 @@ Future<void> analyzeRide(String csvPath) async {
   );
 
   // 2. LOAD DATA
-  final df = await CsvLoader.load(csvPath, schema);
+  final df = await DelimitedLoader.load(csvPath, schema);
   print('Loaded ${df.rowCount} data points');
 
   // 3. EXTRACT SERIES
@@ -201,7 +201,7 @@ Future<void> analyzeRide(String csvPath) async {
 ### ISO 8601 Timestamps (Most Common)
 
 ```dart
-CsvSchema(
+DelimitedSchema(
   xColumn: 'timestamp',
   xType: XValueType.iso8601,
   // ...
@@ -214,25 +214,25 @@ CsvSchema(
 
 ```dart
 // Seconds
-CsvSchema(xColumn: 'time', xType: XValueType.epochSeconds, ...)
+DelimitedSchema(xColumn: 'time', xType: XValueType.epochSeconds, ...)
 // Input: 1698325397 → normalized to elapsed
 
 // Milliseconds
-CsvSchema(xColumn: 'time_ms', xType: XValueType.epochMillis, ...)
+DelimitedSchema(xColumn: 'time_ms', xType: XValueType.epochMillis, ...)
 // Input: 1698325397000 → ÷1000 → normalized
 ```
 
 ### Already Elapsed Time
 
 ```dart
-CsvSchema(xColumn: 'elapsed_s', xType: XValueType.elapsedSeconds, ...)
+DelimitedSchema(xColumn: 'elapsed_s', xType: XValueType.elapsedSeconds, ...)
 // Input: 0, 1, 2, 3, ... → used directly
 ```
 
 ### No X Column (Use Row Index)
 
 ```dart
-CsvSchema(
+DelimitedSchema(
   xColumn: null,  // or omit
   xType: XValueType.rowIndex,
   // ...
@@ -280,7 +280,7 @@ WindowSpec.fixedDuration(
 
 ```dart
 try {
-  final df = await CsvLoader.load('data.csv', schema);
+  final df = await DelimitedLoader.load('data.csv', schema);
 } on FormatException catch (e) {
   print('CSV parsing error: $e');
 } on ArgumentError catch (e) {

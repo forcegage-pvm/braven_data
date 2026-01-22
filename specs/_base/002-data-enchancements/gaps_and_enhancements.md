@@ -83,12 +83,12 @@ class ChartDataPoint {
 
 The following working prototypes are included for implementation guidance:
 
-| File                                                                                                         | Purpose              | Key Features                                                      |
-| ------------------------------------------------------------------------------------------------------------ | -------------------- | ----------------------------------------------------------------- |
-| [csv_test_scenario.dart](csv_test_scenario.dart)                                                             | API usage sketch     | Schema, DataFrame, SeriesPipeline, multi-reducer aggregation      |
-| [reference_implementations/csv_ingestion_example.dart](reference_implementations/csv_ingestion_example.dart) | End-to-end ingestion | CsvLoader mock, DataFrame, rolling pipeline, metric calculations  |
-| [reference_implementations/power_metrics.dart](reference_implementations/power_metrics.dart)                 | Domain algorithms    | SeriesMetric interface, NP/xPower/VI metrics, SMA/EWMA primitives |
-| [reference_implementations/chart_data_point.dart](reference_implementations/chart_data_point.dart)           | Chart output target  | ChartDataPoint structure from BravenChartPlus                     |
+| File                                                                                                         | Purpose              | Key Features                                                           |
+| ------------------------------------------------------------------------------------------------------------ | -------------------- | ---------------------------------------------------------------------- |
+| [csv_test_scenario.dart](csv_test_scenario.dart)                                                             | API usage sketch     | Schema, DataFrame, SeriesPipeline, multi-reducer aggregation           |
+| [reference_implementations/csv_ingestion_example.dart](reference_implementations/csv_ingestion_example.dart) | End-to-end ingestion | DelimitedLoader mock, DataFrame, rolling pipeline, metric calculations |
+| [reference_implementations/power_metrics.dart](reference_implementations/power_metrics.dart)                 | Domain algorithms    | SeriesMetric interface, NP/xPower/VI metrics, SMA/EWMA primitives      |
+| [reference_implementations/chart_data_point.dart](reference_implementations/chart_data_point.dart)           | Chart output target  | ChartDataPoint structure from BravenChartPlus                          |
 
 ---
 
@@ -97,19 +97,19 @@ The following working prototypes are included for implementation guidance:
 **Priority**: HIGH  
 **Proposal Reference**: §6 Data Ingestion & Transformation
 
-### 1.1 CsvSchema
+### 1.1 DelimitedSchema
 
 Column-level schema definition for typed CSV parsing.
 
 **Reference**: [csv_ingestion_example.dart](reference_implementations/csv_ingestion_example.dart) lines 12-22
 
 ```dart
-class CsvSchema {
+class DelimitedSchema {
   final String dateColumn;        // X-axis column (often timestamp)
   final String dateFormat;        // e.g., 'ISO8601'
   final List<ColumnDef> columns;  // Dependent variable definitions
 
-  const CsvSchema({
+  const DelimitedSchema({
     required this.dateColumn,
     this.dateFormat = 'ISO8601',
     required this.columns,
@@ -120,7 +120,7 @@ class CsvSchema {
 **Alternative signature** from csv_test_scenario.dart:
 
 ```dart
-class CsvSchema {
+class DelimitedSchema {
   final String xColumn;           // Generic independent variable
   final DataType xType;           // Type of X column
   final List<ColumnDef> columns;
@@ -186,16 +186,16 @@ enum DataType {
 
 **Design Decision**: Use `FieldType` for simple cases, `DataType` when precision matters.
 
-### 1.4 CsvLoader
+### 1.4 DelimitedLoader
 
 Async streaming CSV parser with schema validation.
 
 ```dart
-abstract class CsvLoader {
+abstract class DelimitedLoader {
   /// Load CSV file into a DataFrame structure
   static Future<DataFrame> load(
     String path,
-    CsvSchema schema, {
+    DelimitedSchema schema, {
     String delimiter = ',',
     bool hasHeader = true,
     int? skipRows,
@@ -204,7 +204,7 @@ abstract class CsvLoader {
   /// Stream-based loading for large files
   static Stream<DataRow> stream(
     String path,
-    CsvSchema schema,
+    DelimitedSchema schema,
   );
 }
 ```
@@ -952,7 +952,7 @@ extension ChartDataFrameOutput on DataFrame {
 One CSV produces multiple chart series:
 
 ```dart
-final table = await CsvLoader.load('garmin.csv', schema);
+final table = await DelimitedLoader.load('garmin.csv', schema);
 
 // Extract multiple series for different chart panels
 final powerPoints = table.toChartSeries(
@@ -1122,7 +1122,7 @@ X-axis values in CSVs can be ANY format - not just ISO8601 timestamps.
 **Schema-Based (Explicit):**
 
 ```dart
-CsvSchema(
+DelimitedSchema(
   xColumn: 'timestamp',
   xType: XValueType.iso8601,  // explicit type
   xFormat: null,              // for custom: DateFormat pattern
@@ -1199,27 +1199,27 @@ List<ChartDataPoint> toChartDataPoints({
 
 ## Implementation Priority Matrix
 
-| Feature                    | Priority | Complexity | Dependencies     | Reference                  |
-| -------------------------- | -------- | ---------- | ---------------- | -------------------------- |
-| **Chart Output Layer**     | **HIGH** | **Medium** | Series           | **chart_data_point.dart**  |
-| Series.toChartDataPoints() | HIGH     | Low        | ChartDataPoint   | chart_data_point.dart      |
-| DataFrame.toChartSeries()  | HIGH     | Medium     | DataFrame, Chart | chart_data_point.dart      |
-| Duration-Based Windows     | HIGH     | Medium     | None             | csv_ingestion_example.dart |
-| CsvSchema + CsvLoader      | HIGH     | High       | DataFrame        | csv_ingestion_example.dart |
-| DataFrame                  | HIGH     | Medium     | DataType         | csv_ingestion_example.dart |
-| SeriesPipeline.compute()   | HIGH     | Low        | SeriesMetric     | csv_ingestion_example.dart |
-| SeriesMetric interface     | HIGH     | Low        | None             | power_metrics.dart         |
-| RollingPipeline            | HIGH     | Medium     | WindowAlignment  | csv_ingestion_example.dart |
-| WindowAlignment            | MEDIUM   | Low        | None             | csv_ingestion_example.dart |
-| Additional Reducers        | MEDIUM   | Low        | None             | power_metrics.dart         |
-| Series.fromColumns()       | MEDIUM   | Low        | DataFrame        | csv_test_scenario.dart     |
-| Power Extensions           | MEDIUM   | Low        | SeriesMetric     | csv_ingestion_example.dart |
-| LTTB Downsampler           | MEDIUM   | Medium     | None             | proposal                   |
-| Multi-Reducer              | MEDIUM   | Medium     | IntervalPoint    | csv_test_scenario.dart     |
-| AxisDomain                 | MEDIUM   | Low        | None             | proposal                   |
-| IntervalPoint              | LOW      | Low        | None             | proposal                   |
-| DistributionPoint          | LOW      | Low        | None             | proposal                   |
-| SeriesPyramid              | LOW      | High       | None             | proposal                   |
+| Feature                           | Priority | Complexity | Dependencies     | Reference                  |
+| --------------------------------- | -------- | ---------- | ---------------- | -------------------------- |
+| **Chart Output Layer**            | **HIGH** | **Medium** | Series           | **chart_data_point.dart**  |
+| Series.toChartDataPoints()        | HIGH     | Low        | ChartDataPoint   | chart_data_point.dart      |
+| DataFrame.toChartSeries()         | HIGH     | Medium     | DataFrame, Chart | chart_data_point.dart      |
+| Duration-Based Windows            | HIGH     | Medium     | None             | csv_ingestion_example.dart |
+| DelimitedSchema + DelimitedLoader | HIGH     | High       | DataFrame        | csv_ingestion_example.dart |
+| DataFrame                         | HIGH     | Medium     | DataType         | csv_ingestion_example.dart |
+| SeriesPipeline.compute()          | HIGH     | Low        | SeriesMetric     | csv_ingestion_example.dart |
+| SeriesMetric interface            | HIGH     | Low        | None             | power_metrics.dart         |
+| RollingPipeline                   | HIGH     | Medium     | WindowAlignment  | csv_ingestion_example.dart |
+| WindowAlignment                   | MEDIUM   | Low        | None             | csv_ingestion_example.dart |
+| Additional Reducers               | MEDIUM   | Low        | None             | power_metrics.dart         |
+| Series.fromColumns()              | MEDIUM   | Low        | DataFrame        | csv_test_scenario.dart     |
+| Power Extensions                  | MEDIUM   | Low        | SeriesMetric     | csv_ingestion_example.dart |
+| LTTB Downsampler                  | MEDIUM   | Medium     | None             | proposal                   |
+| Multi-Reducer                     | MEDIUM   | Medium     | IntervalPoint    | csv_test_scenario.dart     |
+| AxisDomain                        | MEDIUM   | Low        | None             | proposal                   |
+| IntervalPoint                     | LOW      | Low        | None             | proposal                   |
+| DistributionPoint                 | LOW      | Low        | None             | proposal                   |
+| SeriesPyramid                     | LOW      | High       | None             | proposal                   |
 
 ---
 
@@ -1231,9 +1231,9 @@ List<ChartDataPoint> toChartDataPoints({
 
 1. `FieldType` / `DataType` enum
 2. `ColumnDef` class
-3. `CsvSchema` class
+3. `DelimitedSchema` class
 4. `DataFrame` class with columnar storage
-5. `CsvLoader.load()` static method
+5. `DelimitedLoader.load()` static method
 6. `Series.fromColumns()` factory
 7. `Series.toChartDataPoints()` extension
 8. `DataFrame.toChartSeries()` convenience method
@@ -1261,7 +1261,7 @@ List<ChartDataPoint> toChartDataPoints({
 3. Multi-reducer aggregation (returns IntervalPoint)
 4. LTTB downsampling algorithm
 5. IntervalPoint / DistributionPoint types
-6. `CsvLoader.stream()` for large files
+6. `DelimitedLoader.stream()` for large files
 
 ### Sprint 005 (Optional): LOD System
 
@@ -1295,13 +1295,13 @@ Complete end-to-end workflow demonstrating the target API:
 void main() async {
   // A. DEFINE SCHEMA
   // Matches: data/tp-2023646...core_records.csv
-  const schema = CsvSchema(dateColumn: 'timestamp', columns: [
+  const schema = DelimitedSchema(dateColumn: 'timestamp', columns: [
     ColumnDef('power', FieldType.float),
     ColumnDef('heart_rate', FieldType.integer),
   ]);
 
   // B. LOAD DATA
-  final table = await CsvLoader.load('garmin_data.csv', schema);
+  final table = await DelimitedLoader.load('garmin_data.csv', schema);
   print("Loaded DataFrame with ${table.get('power').length} rows.");
 
   // C. EXTRACT SERIES

@@ -1,7 +1,7 @@
 import '../csv/column_def.dart';
-import '../csv/csv_schema.dart';
 import '../csv/x_value_parser.dart';
 import '../csv/x_value_type.dart';
+import '../schema/data_schema.dart';
 import '../series.dart';
 
 /// Columnar data container derived from CSV inputs.
@@ -9,7 +9,7 @@ class DataFrame {
   DataFrame(Map<String, List<dynamic>> columns, this.schema) : columns = Map<String, List<dynamic>>.unmodifiable(columns);
 
   final Map<String, List<dynamic>> columns;
-  final CsvSchema schema;
+  final DataSchema schema;
 
   /// The number of rows in this dataframe.
   int get rowCount => columns.isEmpty ? 0 : columns.values.first.length;

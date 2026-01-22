@@ -8,12 +8,12 @@ import 'dart:math';
 /// --------------------------------------------------------------------------
 
 /// 1. Schema Definition
-class CsvSchema {
+class DelimitedSchema {
   final String dateColumn;
   final List<ColumnDef> columns;
   final String dateFormat;
 
-  const CsvSchema({
+  const DelimitedSchema({
     required this.dateColumn,
     this.dateFormat = 'ISO8601', // Default
     required this.columns,
@@ -47,8 +47,7 @@ class SeriesPipeline {
   }
 
   /// Create a Rolling Window Pipeline
-  RollingPipeline rolling(
-      {required Duration window, WindowAlignment align = WindowAlignment.end}) {
+  RollingPipeline rolling({required Duration window, WindowAlignment align = WindowAlignment.end}) {
     // In real impl, we'd check X domain type. Assuming seconds here.
     return RollingPipeline(_source, window, align);
   }
@@ -65,8 +64,7 @@ class RollingPipeline {
 
   /// Apply a Reducer to the rolling window to create a new Series
   Series<double, double> reduce(SeriesReducer<double> reducer) {
-    print(
-        '  -> Calculating Rolling ${reducer.runtimeType} over ${window.inSeconds}s (Align: ${align.name})...');
+    print('  -> Calculating Rolling ${reducer.runtimeType} over ${window.inSeconds}s (Align: ${align.name})...');
 
     final inputY = source.storage.yAsList;
     final int winSize = window.inSeconds;
@@ -87,8 +85,7 @@ class RollingPipeline {
       outX.add(i.toDouble());
     }
 
-    return ConcreteSeries(
-        id: '${source.id}_rolling_$winSize', xData: outX, yData: outY);
+    return ConcreteSeries(id: '${source.id}_rolling_$winSize', xData: outX, yData: outY);
   }
 }
 
@@ -203,21 +200,18 @@ void main() async {
 
   // A. DEFINE SCHEMA
   // Matches: data/tp-2023646.2025-10-26-13-23-16-784Z.GarminPing.AAAAAGj-IMQ_uYSx_core_records.csv
-  const schema = CsvSchema(dateColumn: 'timestamp', columns: [
+  const schema = DelimitedSchema(dateColumn: 'timestamp', columns: [
     ColumnDef('power', FieldType.float),
     ColumnDef('heart_rate', FieldType.integer),
   ]);
 
   // B. LOAD DATA
-  final table = await _mockCsvLoaderLoad('garmin_data.csv', schema);
+  final table = await _mockDelimitedLoaderLoad('garmin_data.csv', schema);
 
   print("Loaded DataFrame with ${table.get('power').length} rows.");
 
   // C. EXTRACT SERIES
-  final timeBuffer = table
-      .get<DateTime>('timestamp')
-      .map((dt) => dt.millisecondsSinceEpoch.toDouble())
-      .toList();
+  final timeBuffer = table.get<DateTime>('timestamp').map((dt) => dt.millisecondsSinceEpoch.toDouble()).toList();
 
   final powerSeries = ConcreteSeries<double, double>(
     id: 'cycling_power',
@@ -231,8 +225,7 @@ void main() async {
 
   // 1. Normalized Power (NP)
   final np = pipeline.calculateNormalizedPower();
-  print(
-      'Metric: Normalized Power (NP) [Whole Ride]: ${np.toStringAsFixed(1)} W');
+  print('Metric: Normalized Power (NP) [Whole Ride]: ${np.toStringAsFixed(1)} W');
 
   // E. GENERATE PLOTTING DATA (SERIES)
   // "I want to see the 30s average power curve over time"
@@ -240,24 +233,16 @@ void main() async {
   print('\n--- GENERATING PLOT DATA ---');
 
   // 1. Rolling 30s Average
-  final rollingAvg30 = pipeline
-      .rolling(window: const Duration(seconds: 30))
-      .reduce(const MeanReducer());
+  final rollingAvg30 = pipeline.rolling(window: const Duration(seconds: 30)).reduce(const MeanReducer());
 
-  print(
-      "Generated '${rollingAvg30.id}' with ${rollingAvg30.storage.yAsList.length} points.");
-  print(
-      'Sample (T=60s): ${rollingAvg30.storage.yAsList[60].toStringAsFixed(1)} W');
+  print("Generated '${rollingAvg30.id}' with ${rollingAvg30.storage.yAsList.length} points.");
+  print('Sample (T=60s): ${rollingAvg30.storage.yAsList[60].toStringAsFixed(1)} W');
 
   // 2. Rolling 30s "Normalized" (Intensity)
-  final rollingNP30 = pipeline
-      .rolling(window: const Duration(seconds: 30))
-      .reduce(const NormalizedPowerReducer());
+  final rollingNP30 = pipeline.rolling(window: const Duration(seconds: 30)).reduce(const NormalizedPowerReducer());
 
-  print(
-      "Generated '${rollingNP30.id}' with ${rollingNP30.storage.yAsList.length} points.");
-  print(
-      'Sample (T=60s): ${rollingNP30.storage.yAsList[60].toStringAsFixed(1)} W (Weighted)');
+  print("Generated '${rollingNP30.id}' with ${rollingNP30.storage.yAsList.length} points.");
+  print('Sample (T=60s): ${rollingNP30.storage.yAsList[60].toStringAsFixed(1)} W (Weighted)');
 
   print('--- END ANALYSIS ---');
 }
@@ -266,7 +251,7 @@ void main() async {
 /// MOCK LOADER
 /// --------------------------------------------------------------------------
 
-Future<DataFrame> _mockCsvLoaderLoad(String path, CsvSchema schema) async {
+Future<DataFrame> _mockDelimitedLoaderLoad(String path, DelimitedSchema schema) async {
   const count = 1000;
   final timestamps = <DateTime>[];
   final power = <double>[];

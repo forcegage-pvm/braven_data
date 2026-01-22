@@ -1,5 +1,5 @@
 import 'package:braven_data/src/csv/column_def.dart';
-import 'package:braven_data/src/csv/csv_schema.dart';
+import 'package:braven_data/src/csv/delimited_schema.dart';
 import 'package:braven_data/src/csv/field_type.dart';
 import 'package:braven_data/src/csv/x_value_type.dart';
 import 'package:braven_data/src/dataframe/dataframe.dart';
@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 void main() {
   group('DataFrame.toSeries', () {
     test('toSeries extracts Y column with X as elapsed seconds', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,
         columns: [
@@ -34,7 +34,7 @@ void main() {
     });
 
     test('toSeries normalizes X values relative to first point', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xColumn: 'time',
         xType: XValueType.elapsedSeconds,
         columns: [
@@ -56,7 +56,7 @@ void main() {
     });
 
     test('toSeries preserves row order (non-monotonic X allowed)', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,
         columns: [
@@ -78,7 +78,7 @@ void main() {
     });
 
     test('toSeries throws for unknown yColumn', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,
         columns: [
@@ -98,7 +98,7 @@ void main() {
     });
 
     test('toSeries uses provided SeriesMeta', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,
         columns: [
@@ -120,9 +120,8 @@ void main() {
       expect(series.meta.unit, 'W');
     });
 
-    test('toSeries auto-generates SeriesMeta from column name if not provided',
-        () {
-      final schema = CsvSchema(
+    test('toSeries auto-generates SeriesMeta from column name if not provided', () {
+      final schema = DelimitedSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,
         columns: [

@@ -1,5 +1,5 @@
 export 'column_def.dart';
-export 'csv_schema.dart';
+export 'delimited_schema.dart';
 export 'field_type.dart';
 export 'loader.dart';
 export 'parser.dart';

@@ -46,7 +46,7 @@ void exampleLoadCsvData() {
   print('└─────────────────────────────────────────────────────────┘');
 
   // Define schema for cycling power data
-  final schema = CsvSchema(
+  final schema = DelimitedSchema(
     xColumn: 'timestamp',
     xType: XValueType.iso8601,
     columns: [
@@ -73,7 +73,7 @@ timestamp,power,heart_rate,cadence,speed
 ''';
 
   // Load the CSV
-  final dataFrame = CsvLoader.loadString(csvContent, schema);
+  final dataFrame = DelimitedLoader.loadString(csvContent, schema);
 
   print('  Loaded DataFrame:');
   print('    Rows: ${dataFrame.rowCount}');

@@ -21,6 +21,8 @@ export 'src/csv/csv.dart';
 // DataFrame layer exports.
 export 'src/dataframe/dataframe.dart';
 export 'src/engine.dart';
+// FIT ingestion exports.
+export 'src/fit/fit.dart';
 // Metrics layer exports.
 export 'src/metrics/metrics.dart';
 // Output layer exports.

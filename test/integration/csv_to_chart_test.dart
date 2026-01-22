@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:braven_data/src/aggregation.dart';
 import 'package:braven_data/src/csv/column_def.dart';
-import 'package:braven_data/src/csv/csv_schema.dart';
+import 'package:braven_data/src/csv/delimited_schema.dart';
 import 'package:braven_data/src/csv/field_type.dart';
 import 'package:braven_data/src/csv/loader.dart';
 import 'package:braven_data/src/csv/x_value_type.dart';
@@ -17,7 +17,7 @@ void main() {
       final csvFile = _findGarminCsvFile();
       final content = csvFile.readAsStringSync();
 
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         hasHeader: true,
         delimiter: ',',
         xColumn: 'timestamp',
@@ -32,7 +32,7 @@ void main() {
         ],
       );
 
-      final dataframe = CsvLoader.loadString(content, schema);
+      final dataframe = DelimitedLoader.loadString(content, schema);
       final series = dataframe.toSeries(
         'power',
         meta: const SeriesMeta(name: 'power', unit: 'watts'),
@@ -68,11 +68,7 @@ File _findGarminCsvFile() {
     fail('Garmin sample data directory not found: ${dataDir.path}');
   }
 
-  final csvFiles = dataDir
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((file) => file.path.toLowerCase().endsWith('.csv'))
-      .toList();
+  final csvFiles = dataDir.listSync(recursive: true).whereType<File>().where((file) => file.path.toLowerCase().endsWith('.csv')).toList();
 
   if (csvFiles.isEmpty) {
     fail('No Garmin CSV files found under ${dataDir.path}');

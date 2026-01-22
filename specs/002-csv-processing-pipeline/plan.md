@@ -73,8 +73,8 @@ lib/
     ├── series.dart          # [EXISTS] Series<TX,TY>
     ├── storage.dart         # [EXISTS] TypedDataStorage, IntervalStorage
     ├── csv/                  # [NEW] CSV ingestion layer
-    │   ├── schema.dart       # CsvSchema, ColumnDef, XValueType
-    │   ├── loader.dart       # CsvLoader.load()
+    │   ├── schema.dart       # DelimitedSchema, ColumnDef, XValueType
+    │   ├── loader.dart       # DelimitedLoader.load()
     │   └── parser.dart       # Internal CSV parsing utilities
     ├── dataframe/            # [NEW] DataFrame support
     │   └── dataframe.dart    # DataFrame class

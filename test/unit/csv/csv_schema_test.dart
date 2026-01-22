@@ -1,5 +1,5 @@
 import 'package:braven_data/src/csv/column_def.dart';
-import 'package:braven_data/src/csv/csv_schema.dart';
+import 'package:braven_data/src/csv/delimited_schema.dart';
 import 'package:braven_data/src/csv/field_type.dart';
 import 'package:braven_data/src/csv/x_value_type.dart';
 import 'package:test/test.dart';
@@ -7,9 +7,9 @@ import 'package:test/test.dart';
 XValueType _nonConstXType(XValueType value) => value;
 
 void main() {
-  group('CsvSchema', () {
+  group('DelimitedSchema', () {
     test('construction with valid xColumn, xType, and columns succeeds', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xColumn: 'timestamp',
         xType: XValueType.iso8601,
         columns: [
@@ -27,7 +27,7 @@ void main() {
         ColumnDef(name: 'power', type: FieldType.float64),
       ];
       expect(
-        () => CsvSchema(
+        () => DelimitedSchema(
           xType: xType,
           columns: columns,
         ),
@@ -36,7 +36,7 @@ void main() {
     });
 
     test('xColumn null with xType.rowIndex succeeds', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xType: XValueType.rowIndex,
         columns: [
           ColumnDef(name: 'power', type: FieldType.float64),
@@ -50,7 +50,7 @@ void main() {
       final xType = _nonConstXType(XValueType.rowIndex);
       final columns = <ColumnDef>[];
       expect(
-        () => CsvSchema(
+        () => DelimitedSchema(
           xType: xType,
           columns: columns,
         ),
@@ -65,7 +65,7 @@ void main() {
         ColumnDef(name: 'power', type: FieldType.int64),
       ];
       expect(
-        () => CsvSchema(
+        () => DelimitedSchema(
           xType: xType,
           columns: columns,
         ),
@@ -74,7 +74,7 @@ void main() {
     });
 
     test('default hasHeader is true', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xType: XValueType.rowIndex,
         columns: [
           ColumnDef(name: 'power', type: FieldType.float64),
@@ -84,7 +84,7 @@ void main() {
     });
 
     test('default delimiter is comma', () {
-      final schema = CsvSchema(
+      final schema = DelimitedSchema(
         xType: XValueType.rowIndex,
         columns: [
           ColumnDef(name: 'power', type: FieldType.float64),
@@ -95,7 +95,7 @@ void main() {
 
     test('xType accepts all XValueType enum values', () {
       for (final value in XValueType.values) {
-        final schema = CsvSchema(
+        final schema = DelimitedSchema(
           xType: value,
           xColumn: value == XValueType.rowIndex ? null : 'x',
           columns: [

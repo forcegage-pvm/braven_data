@@ -69,8 +69,8 @@ class ColumnDef {
   });
 }
 
-/// Defines the complete structure for parsing a CSV file.
-class CsvSchema {
+/// Defines the complete structure for parsing a delimited text file.
+class DelimitedSchema {
   /// Column name containing X-axis values (null = use rowIndex)
   final String? xColumn;
 
@@ -86,7 +86,7 @@ class CsvSchema {
   /// Column separator character (default: ',')
   final String delimiter;
 
-  const CsvSchema({
+  const DelimitedSchema({
     this.xColumn,
     required this.xType,
     required this.columns,
@@ -95,8 +95,8 @@ class CsvSchema {
   });
 }
 
-/// Loads CSV files into DataFrame structures.
-abstract class CsvLoader {
+/// Loads delimited text files into DataFrame structures.
+abstract class DelimitedLoader {
   /// Load a CSV file synchronously from string content.
   ///
   /// [content] - Raw CSV string content
@@ -104,7 +104,11 @@ abstract class CsvLoader {
   ///
   /// Returns a [DataFrame] with typed columnar storage.
   /// Throws [FormatException] if CSV structure doesn't match schema.
-  static DataFrame loadString(String content, CsvSchema schema) {
+  static DataFrame loadString(
+    String content,
+    DelimitedSchema schema, {
+    String? delimiter,
+  }) {
     throw UnimplementedError();
   }
 
@@ -114,7 +118,11 @@ abstract class CsvLoader {
   /// [schema] - Schema defining how to parse the CSV
   ///
   /// Returns a [Future<DataFrame>] with typed columnar storage.
-  static Future<DataFrame> load(String path, CsvSchema schema) async {
+  static Future<DataFrame> load(
+    String path,
+    DelimitedSchema schema, {
+    String? delimiter,
+  }) async {
     throw UnimplementedError();
   }
 }
