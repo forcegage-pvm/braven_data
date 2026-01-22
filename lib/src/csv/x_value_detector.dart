@@ -54,9 +54,7 @@ class XValueDetector {
     const maxEpochMillis = 2000000000000;
     for (final value in values) {
       final millis = _parseInt(value);
-      if (millis == null ||
-          millis < minEpochMillis ||
-          millis > maxEpochMillis) {
+      if (millis == null || millis < minEpochMillis || millis > maxEpochMillis) {
         return false;
       }
       if (value.length != 13) {
@@ -71,9 +69,7 @@ class XValueDetector {
     const maxEpochSeconds = 2000000000;
     for (final value in values) {
       final seconds = _parseInt(value);
-      if (seconds == null ||
-          seconds < minEpochSeconds ||
-          seconds > maxEpochSeconds) {
+      if (seconds == null || seconds < minEpochSeconds || seconds > maxEpochSeconds) {
         return false;
       }
       if (value.length != 10) {
