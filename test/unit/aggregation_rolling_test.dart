@@ -1,29 +1,28 @@
-// @orchestra-task: 6
-@Tags(['tdd-red'])
-library;
-
+import 'package:braven_data/src/aggregation.dart';
+import 'package:braven_data/src/engine.dart';
 import 'package:braven_data/src/output/window_alignment.dart';
 import 'package:braven_data/src/series.dart';
 import 'package:test/test.dart';
 
-class DurationWindowSpec {
-  DurationWindowSpec(this.duration);
-
-  final Duration duration;
-}
-
-Series<int, double> aggregateRollingDuration(
-  Series<int, double> series,
-  DurationWindowSpec window, {
+AggregationResult<double, double> aggregateRollingDuration(
+  Series<double, double> series,
+  RollingDurationWindowSpec window, {
   WindowAlignment alignment = WindowAlignment.end,
 }) {
-  throw UnimplementedError('Rolling duration-based aggregation missing.');
+  return AggregationEngine.aggregate(
+    series,
+    AggregationSpec<double>(
+      window: window,
+      reducer: SeriesReducer.mean,
+      alignment: alignment,
+    ),
+  );
 }
 
-Series<int, double> _buildPowerSeries(int length) {
-  final xValues = List<int>.generate(length, (index) => index);
+Series<double, double> _buildPowerSeries(int length) {
+  final xValues = List<double>.generate(length, (index) => index.toDouble());
   final yValues = List<double>.generate(length, (index) => index + 1.0);
-  return Series<int, double>.fromTypedData(
+  return Series<double, double>.fromTypedData(
     meta: const SeriesMeta(name: 'Power'),
     xValues: xValues,
     yValues: yValues,
@@ -37,20 +36,20 @@ void main() {
 
       final result = aggregateRollingDuration(
         series,
-        DurationWindowSpec(const Duration(seconds: 30)),
+        RollingDurationWindowSpec(const Duration(seconds: 30)),
       );
 
-      expect(result.length, series.length);
-      expect(result.getY(0), closeTo(1.0, 1e-9));
-      expect(result.getY(1), closeTo(1.5, 1e-9));
-      expect(result.getY(29), closeTo(15.5, 1e-9));
-      expect(result.getY(30), closeTo(16.5, 1e-9));
-      expect(result.getY(59), closeTo(45.5, 1e-9));
+      expect(result.yValues.length, series.length);
+      expect(result.yValues[0], closeTo(1.0, 1e-9));
+      expect(result.yValues[1], closeTo(1.5, 1e-9));
+      expect(result.yValues[29], closeTo(15.5, 1e-9));
+      expect(result.yValues[30], closeTo(16.5, 1e-9));
+      expect(result.yValues[59], closeTo(45.5, 1e-9));
     });
 
     test('alignment options change output X values', () {
       final series = _buildPowerSeries(60);
-      final window = DurationWindowSpec(const Duration(seconds: 30));
+      final window = RollingDurationWindowSpec(const Duration(seconds: 30));
 
       final startAligned = aggregateRollingDuration(
         series,
@@ -68,9 +67,9 @@ void main() {
         alignment: WindowAlignment.end,
       );
 
-      expect(startAligned.getX(29), isNot(centerAligned.getX(29)));
-      expect(centerAligned.getX(29), isNot(endAligned.getX(29)));
-      expect(startAligned.getX(29), isNot(endAligned.getX(29)));
+      expect(startAligned.xValues[29], isNot(centerAligned.xValues[29]));
+      expect(centerAligned.xValues[29], isNot(endAligned.xValues[29]));
+      expect(startAligned.xValues[29], isNot(endAligned.xValues[29]));
     });
 
     test('early points use partial windows', () {
@@ -78,12 +77,12 @@ void main() {
 
       final result = aggregateRollingDuration(
         series,
-        DurationWindowSpec(const Duration(seconds: 30)),
+        RollingDurationWindowSpec(const Duration(seconds: 30)),
       );
 
-      expect(result.getY(0), closeTo(1.0, 1e-9));
-      expect(result.getY(1), closeTo(1.5, 1e-9));
-      expect(result.getY(2), closeTo(2.0, 1e-9));
+      expect(result.yValues[0], closeTo(1.0, 1e-9));
+      expect(result.yValues[1], closeTo(1.5, 1e-9));
+      expect(result.yValues[2], closeTo(2.0, 1e-9));
     });
   });
 }

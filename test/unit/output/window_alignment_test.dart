@@ -1,16 +1,6 @@
-// @orchestra-task: 6
-@Tags(['tdd-red'])
-library;
-
+import 'package:braven_data/src/engine.dart';
 import 'package:braven_data/src/output/window_alignment.dart';
 import 'package:test/test.dart';
-
-double alignWindowX(
-  List<double> windowX,
-  WindowAlignment alignment,
-) {
-  throw UnimplementedError('Duration-based window alignment not implemented.');
-}
 
 void main() {
   group('WindowAlignment', () {

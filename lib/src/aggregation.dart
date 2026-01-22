@@ -1,3 +1,6 @@
+import 'output/window_alignment.dart';
+import 'series.dart';
+
 /// Aggregation window specifications for downsampling and rendering.
 sealed class WindowSpec {
   const WindowSpec._();
@@ -5,6 +8,12 @@ sealed class WindowSpec {
   factory WindowSpec.fixed(num size) => FixedWindowSpec(size);
 
   factory WindowSpec.rolling(num size) => RollingWindowSpec(size);
+
+  factory WindowSpec.fixedDuration(Duration duration) =>
+      FixedDurationWindowSpec(duration);
+
+  factory WindowSpec.rollingDuration(Duration duration) =>
+      RollingDurationWindowSpec(duration);
 
   factory WindowSpec.pixelAligned(double pixelDensity) =>
       PixelAlignedWindowSpec(pixelDensity);
@@ -28,10 +37,15 @@ abstract class SeriesReducer<T> {
 /// Combines a windowing strategy with a reducer that collapses each window
 /// into a single output value.
 class AggregationSpec<TX> {
-  const AggregationSpec({required this.window, required this.reducer});
+  const AggregationSpec({
+    required this.window,
+    required this.reducer,
+    this.alignment = WindowAlignment.end,
+  });
 
   final WindowSpec window;
   final SeriesReducer<dynamic> reducer;
+  final WindowAlignment alignment;
 }
 
 /// Non-overlapping fixed-size window.
@@ -54,6 +68,46 @@ class RollingWindowSpec extends WindowSpec {
   }
 
   final num size;
+}
+
+/// Fixed-duration window based on time spans.
+///
+/// Converts a [duration] into a point count using inferred sample rate.
+class FixedDurationWindowSpec extends WindowSpec {
+  FixedDurationWindowSpec(this.duration) : super._() {
+    _validateDuration(duration, 'duration');
+  }
+
+  final Duration duration;
+
+  int pointCountForSeries<TX, TY>(Series<TX, TY> series) {
+    final sampleRate = inferredSampleRateHz(series);
+    return _durationPointCount(duration, sampleRate);
+  }
+
+  double inferredSampleRateHz<TX, TY>(Series<TX, TY> series) {
+    return _inferSampleRateHz(series);
+  }
+}
+
+/// Rolling-duration window based on time spans.
+///
+/// Converts a [duration] into a point count using inferred sample rate.
+class RollingDurationWindowSpec extends WindowSpec {
+  RollingDurationWindowSpec(this.duration) : super._() {
+    _validateDuration(duration, 'duration');
+  }
+
+  final Duration duration;
+
+  int pointCountForSeries<TX, TY>(Series<TX, TY> series) {
+    final sampleRate = inferredSampleRateHz(series);
+    return _durationPointCount(duration, sampleRate);
+  }
+
+  double inferredSampleRateHz<TX, TY>(Series<TX, TY> series) {
+    return _inferSampleRateHz(series);
+  }
 }
 
 /// Pixel-aligned dynamic window for rendering.
@@ -166,8 +220,73 @@ void _validateSize(num size, String name) {
   }
 }
 
+void _validateDuration(Duration duration, String name) {
+  if (duration <= Duration.zero) {
+    throw ArgumentError('$name must be a positive duration.');
+  }
+}
+
 void _validateValues(List<double> values) {
   if (values.isEmpty) {
     throw ArgumentError('values must not be empty.');
   }
+}
+
+double _inferSampleRateHz<TX, TY>(Series<TX, TY> series) {
+  if (series.length < 2) {
+    throw ArgumentError('Series must contain at least 2 points.');
+  }
+
+  final deltas = <double>[];
+  for (var i = 0; i < series.length - 1; i++) {
+    final current = _asDouble(series.getX(i));
+    final next = _asDouble(series.getX(i + 1));
+    final delta = next - current;
+    if (delta <= 0 || delta.isNaN || delta.isInfinite) {
+      throw ArgumentError('Series X values must be strictly increasing.');
+    }
+    deltas.add(delta);
+  }
+
+  final medianDelta = _median(deltas);
+  if (medianDelta <= 0) {
+    throw ArgumentError('Cannot infer sample rate from non-positive deltas.');
+  }
+  return 1.0 / medianDelta;
+}
+
+int _durationPointCount(Duration duration, double sampleRateHz) {
+  if (sampleRateHz <= 0 || sampleRateHz.isNaN || sampleRateHz.isInfinite) {
+    throw ArgumentError('Sample rate must be a positive finite value.');
+  }
+
+  final seconds =
+      duration.inMicroseconds / Duration.microsecondsPerSecond.toDouble();
+  final count = (seconds * sampleRateHz).round();
+  return count < 1 ? 1 : count;
+}
+
+double _median(List<double> values) {
+  if (values.isEmpty) {
+    throw ArgumentError('values must not be empty.');
+  }
+
+  final sorted = List<double>.from(values)..sort();
+  final mid = sorted.length ~/ 2;
+  if (sorted.length.isOdd) {
+    return sorted[mid];
+  }
+
+  return (sorted[mid - 1] + sorted[mid]) / 2.0;
+}
+
+double _asDouble(dynamic value) {
+  if (value is num) {
+    final resolved = value.toDouble();
+    if (resolved.isNaN || resolved.isInfinite) {
+      throw ArgumentError('Series X values must be finite numbers.');
+    }
+    return resolved;
+  }
+  throw ArgumentError('Series X values must be numeric.');
 }

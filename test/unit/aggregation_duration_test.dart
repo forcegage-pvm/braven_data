@@ -1,23 +1,6 @@
-// @orchestra-task: 6
-@Tags(['tdd-red'])
-library;
-
+import 'package:braven_data/src/aggregation.dart';
 import 'package:braven_data/src/series.dart';
 import 'package:test/test.dart';
-
-class DurationWindowSpec {
-  DurationWindowSpec(this.duration);
-
-  final Duration duration;
-
-  int pointCountForSeries<TX, TY>(Series<TX, TY> series) {
-    throw UnimplementedError('Duration to point count conversion missing.');
-  }
-
-  double inferredSampleRateHz<TX, TY>(Series<TX, TY> series) {
-    throw UnimplementedError('Sample rate inference missing.');
-  }
-}
 
 Series<double, double> _seriesFromSeconds(List<double> seconds) {
   final values = List<double>.generate(seconds.length, (index) => index + 1.0);
@@ -33,7 +16,7 @@ void main() {
     test('30-second window at 1Hz uses 30 points', () {
       final seconds = List<double>.generate(120, (index) => index.toDouble());
       final series = _seriesFromSeconds(seconds);
-      final spec = DurationWindowSpec(const Duration(seconds: 30));
+      final spec = FixedDurationWindowSpec(const Duration(seconds: 30));
 
       final pointCount = spec.pointCountForSeries(series);
 
@@ -46,7 +29,7 @@ void main() {
         (index) => index * 0.1,
       );
       final series = _seriesFromSeconds(seconds);
-      final spec = DurationWindowSpec(const Duration(minutes: 5));
+      final spec = FixedDurationWindowSpec(const Duration(minutes: 5));
 
       final pointCount = spec.pointCountForSeries(series);
 
@@ -56,7 +39,7 @@ void main() {
     test('infers sample rate from X value deltas', () {
       final seconds = List<double>.generate(50, (index) => index * 0.1);
       final series = _seriesFromSeconds(seconds);
-      final spec = DurationWindowSpec(const Duration(seconds: 1));
+      final spec = FixedDurationWindowSpec(const Duration(seconds: 1));
 
       final sampleRate = spec.inferredSampleRateHz(series);
 

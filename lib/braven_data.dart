@@ -26,7 +26,7 @@ export 'src/series.dart';
 export 'src/storage.dart';
 
 // Output layer exports (placeholder).
-// export 'src/output/window_alignment.dart';
+export 'src/output/window_alignment.dart';
 
 // Metrics layer exports (placeholder).
 // export 'src/metrics/...';
