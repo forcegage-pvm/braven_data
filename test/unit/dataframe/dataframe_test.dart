@@ -1,21 +1,9 @@
-// @orchestra-task: 4
-@Tags(['tdd-red'])
-library;
-
 import 'package:braven_data/src/csv/column_def.dart';
 import 'package:braven_data/src/csv/csv_schema.dart';
 import 'package:braven_data/src/csv/field_type.dart';
 import 'package:braven_data/src/csv/x_value_type.dart';
+import 'package:braven_data/src/dataframe/dataframe.dart';
 import 'package:test/test.dart';
-
-class DataFrame {
-  DataFrame(Map<String, List<dynamic>> columns, CsvSchema schema);
-
-  int get rowCount => 0;
-  List<String> get columnNames => [];
-  List<T> get<T>(String columnName) => [];
-  List<double> getXValues() => [];
-}
 
 void main() {
   group('DataFrame', () {

@@ -1,20 +1,6 @@
-// @orchestra-task: 4
-@Tags(['tdd-red'])
-library;
-
+import 'package:braven_data/src/csv/x_value_parser.dart';
 import 'package:braven_data/src/csv/x_value_type.dart';
 import 'package:test/test.dart';
-
-class XValueParser {
-  static double parseValue(
-    String value,
-    XValueType type, {
-    double? baseEpoch,
-  }) =>
-      0.0;
-
-  static List<double> parseColumn(List<String> values, XValueType type) => [];
-}
 
 void main() {
   group('XValueParser.parseValue', () {

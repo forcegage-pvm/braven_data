@@ -1,14 +1,5 @@
-// @orchestra-task: 4
-@Tags(['tdd-red'])
-library;
-
+import 'package:braven_data/src/csv/parser.dart';
 import 'package:test/test.dart';
-
-class CsvParser {
-  static List<String> splitLines(String content) => [];
-
-  static List<String> parseFields(String line, {String delimiter = ','}) => [];
-}
 
 void main() {
   group('CsvParser.splitLines', () {

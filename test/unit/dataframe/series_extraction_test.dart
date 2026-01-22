@@ -1,26 +1,10 @@
-// @orchestra-task: 4
-@Tags(['tdd-red'])
-library;
-
 import 'package:braven_data/src/csv/column_def.dart';
 import 'package:braven_data/src/csv/csv_schema.dart';
 import 'package:braven_data/src/csv/field_type.dart';
 import 'package:braven_data/src/csv/x_value_type.dart';
+import 'package:braven_data/src/dataframe/dataframe.dart';
 import 'package:braven_data/src/series.dart';
 import 'package:test/test.dart';
-
-class DataFrame {
-  DataFrame(this.columns, this.schema);
-
-  final Map<String, List<dynamic>> columns;
-  final CsvSchema schema;
-}
-
-extension DataFrameSeriesExtraction on DataFrame {
-  Series<double, double> toSeries(String yColumn, {SeriesMeta? meta}) {
-    throw UnimplementedError();
-  }
-}
 
 void main() {
   group('DataFrame.toSeries', () {
@@ -136,7 +120,8 @@ void main() {
       expect(series.meta.unit, 'W');
     });
 
-    test('toSeries auto-generates SeriesMeta from column name if not provided', () {
+    test('toSeries auto-generates SeriesMeta from column name if not provided',
+        () {
       final schema = CsvSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,

@@ -1,27 +1,9 @@
-// @orchestra-task: 4
-@Tags(['tdd-red'])
-library;
-
 import 'package:braven_data/src/csv/column_def.dart';
 import 'package:braven_data/src/csv/csv_schema.dart';
 import 'package:braven_data/src/csv/field_type.dart';
+import 'package:braven_data/src/csv/loader.dart';
 import 'package:braven_data/src/csv/x_value_type.dart';
 import 'package:test/test.dart';
-
-class DataFrame {
-  DataFrame(this.columns, this.schema);
-
-  final Map<String, List<dynamic>> columns;
-  final CsvSchema schema;
-
-  int get rowCount => columns.isEmpty ? 0 : columns.values.first.length;
-}
-
-class CsvLoader {
-  static DataFrame loadString(String content, CsvSchema schema) {
-    throw UnimplementedError();
-  }
-}
 
 void main() {
   group('CsvLoader.loadString', () {
