@@ -1,51 +1,15 @@
-// @orchestra-task: 2
-@Tags(['tdd-red'])
-library;
-
+import 'package:braven_data/src/csv/column_def.dart';
+import 'package:braven_data/src/csv/csv_schema.dart';
 import 'package:braven_data/src/csv/field_type.dart';
 import 'package:braven_data/src/csv/x_value_type.dart';
 import 'package:test/test.dart';
-
-// Stub - will be replaced by import when implementation exists.
-class ColumnDef {
-  final String name;
-  final FieldType type;
-  final dynamic defaultValue;
-  final String? unit;
-
-  const ColumnDef({
-    required this.name,
-    required this.type,
-    this.defaultValue,
-    this.unit,
-  });
-}
-
-// Stub - will be replaced by import when implementation exists.
-class CsvSchema {
-  final String? xColumn;
-  final XValueType xType;
-  final String? xFormat;
-  final List<ColumnDef> columns;
-  final bool hasHeader;
-  final String delimiter;
-
-  const CsvSchema({
-    this.xColumn,
-    required this.xType,
-    this.xFormat,
-    required this.columns,
-    this.hasHeader = true,
-    this.delimiter = ',',
-  });
-}
 
 XValueType _nonConstXType(XValueType value) => value;
 
 void main() {
   group('CsvSchema', () {
     test('construction with valid xColumn, xType, and columns succeeds', () {
-      const schema = CsvSchema(
+      final schema = CsvSchema(
         xColumn: 'timestamp',
         xType: XValueType.iso8601,
         columns: [
@@ -60,7 +24,7 @@ void main() {
     test('xColumn null with non-rowIndex xType throws ArgumentError', () {
       final xType = _nonConstXType(XValueType.epochSeconds);
       final columns = [
-        const ColumnDef(name: 'power', type: FieldType.float64),
+        ColumnDef(name: 'power', type: FieldType.float64),
       ];
       expect(
         () => CsvSchema(
@@ -72,7 +36,7 @@ void main() {
     });
 
     test('xColumn null with xType.rowIndex succeeds', () {
-      const schema = CsvSchema(
+      final schema = CsvSchema(
         xType: XValueType.rowIndex,
         columns: [
           ColumnDef(name: 'power', type: FieldType.float64),
@@ -97,8 +61,8 @@ void main() {
     test('duplicate column names throws ArgumentError', () {
       final xType = _nonConstXType(XValueType.rowIndex);
       final columns = [
-        const ColumnDef(name: 'power', type: FieldType.float64),
-        const ColumnDef(name: 'power', type: FieldType.int64),
+        ColumnDef(name: 'power', type: FieldType.float64),
+        ColumnDef(name: 'power', type: FieldType.int64),
       ];
       expect(
         () => CsvSchema(
@@ -110,7 +74,7 @@ void main() {
     });
 
     test('default hasHeader is true', () {
-      const schema = CsvSchema(
+      final schema = CsvSchema(
         xType: XValueType.rowIndex,
         columns: [
           ColumnDef(name: 'power', type: FieldType.float64),
@@ -120,7 +84,7 @@ void main() {
     });
 
     test('default delimiter is comma', () {
-      const schema = CsvSchema(
+      final schema = CsvSchema(
         xType: XValueType.rowIndex,
         columns: [
           ColumnDef(name: 'power', type: FieldType.float64),
@@ -135,7 +99,7 @@ void main() {
           xType: value,
           xColumn: value == XValueType.rowIndex ? null : 'x',
           columns: [
-            const ColumnDef(name: 'power', type: FieldType.float64),
+            ColumnDef(name: 'power', type: FieldType.float64),
           ],
         );
         expect(schema.xType, value);
