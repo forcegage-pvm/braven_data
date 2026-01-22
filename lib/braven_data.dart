@@ -21,12 +21,11 @@ export 'src/csv/csv.dart';
 // DataFrame layer exports.
 export 'src/dataframe/dataframe.dart';
 export 'src/engine.dart';
+// Output layer exports.
+export 'src/output/output.dart';
 export 'src/pipeline.dart';
 export 'src/series.dart';
 export 'src/storage.dart';
-
-// Output layer exports (placeholder).
-export 'src/output/window_alignment.dart';
 
 // Metrics layer exports (placeholder).
 // export 'src/metrics/...';

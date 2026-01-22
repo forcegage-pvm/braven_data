@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'aggregation.dart';
 import 'engine.dart';
 import 'pipeline.dart';
@@ -38,10 +40,15 @@ class Series<TX, TY> {
     required List<TY> yValues,
     SeriesStats? stats,
   }) {
-    final storage = TypedDataStorage<TX, TY>(
-      xValues: xValues,
-      yValues: yValues,
-    );
+    final storage = _canUseTypedStorage(xValues, yValues)
+        ? TypedDataStorage<TX, TY>(
+            xValues: xValues,
+            yValues: yValues,
+          )
+        : ListStorage<TX, TY>(
+            xValues: xValues,
+            yValues: yValues,
+          );
     final resolvedId = id ?? _generateId();
     return Series<TX, TY>(
       id: resolvedId,
@@ -145,6 +152,17 @@ class Series<TX, TY> {
       }
     }
   }
+}
+
+bool _canUseTypedStorage<TX, TY>(List<TX> xValues, List<TY> yValues) {
+  return _isNumericList(xValues) && _isNumericList(yValues);
+}
+
+bool _isNumericList<T>(List<T> values) {
+  return values is Float64List ||
+      values is Int64List ||
+      values is List<double> ||
+      values is List<int>;
 }
 
 /// Describes a series with a name and optional unit.

@@ -1,6 +1,4 @@
-// @orchestra-task: 8
 // ignore_for_file: unnecessary_library_name
-@Tags(['tdd-red'])
 library;
 
 import 'package:braven_data/src/output/chart_data_point.dart';
