@@ -2,11 +2,16 @@ import 'dart:typed_data';
 
 /// Storage abstraction for columnar series data.
 abstract class SeriesStorage<TX, TY> {
+  /// Number of points stored.
   int get length;
 
+  /// Returns the X value at [index].
   TX getX(int index);
+
+  /// Returns the Y value at [index].
   TY getY(int index);
 
+  /// Creates an independent copy of this storage.
   SeriesStorage<TX, TY> copy();
 }
 
@@ -16,6 +21,10 @@ abstract class SeriesStorage<TX, TY> {
 /// for efficient storage. Use this storage when you want compact, fast numeric
 /// access and predictable memory layout.
 class TypedDataStorage<TX, TY> implements SeriesStorage<TX, TY> {
+  /// Creates typed-data storage from [xValues] and [yValues].
+  ///
+  /// Throws [ArgumentError] if the lists have different lengths or contain
+  /// non-numeric values that cannot be stored in typed buffers.
   TypedDataStorage({
     required List<TX> xValues,
     required List<TY> yValues,
@@ -52,6 +61,9 @@ class TypedDataStorage<TX, TY> implements SeriesStorage<TX, TY> {
 /// Use this storage when values are not strictly numeric or when list
 /// semantics (such as mixed types) are required.
 class ListStorage<TX, TY> implements SeriesStorage<TX, TY> {
+  /// Creates list-backed storage from [xValues] and [yValues].
+  ///
+  /// Throws [ArgumentError] if the lists have different lengths.
   ListStorage({
     required List<TX> xValues,
     required List<TY> yValues,
@@ -87,6 +99,10 @@ class ListStorage<TX, TY> implements SeriesStorage<TX, TY> {
 ///
 /// Each X value maps to a minimum, maximum, and mean value for the interval.
 class IntervalStorage<TX> implements SeriesStorage<TX, double> {
+  /// Creates interval storage from aligned X, min, max, and mean lists.
+  ///
+  /// Throws [ArgumentError] if the provided lists differ in length or contain
+  /// invalid numeric values.
   IntervalStorage({
     required List<TX> xValues,
     required List<double> minValues,
@@ -97,9 +113,7 @@ class IntervalStorage<TX> implements SeriesStorage<TX, double> {
         _maxValues = _ensureDoubleStorage(maxValues),
         _meanValues = _ensureDoubleStorage(meanValues) {
     final length = _xValues.length;
-    if (_minValues.length != length ||
-        _maxValues.length != length ||
-        _meanValues.length != length) {
+    if (_minValues.length != length || _maxValues.length != length || _meanValues.length != length) {
       throw ArgumentError(
         'All value arrays must have the same length for IntervalStorage.',
       );
@@ -117,10 +131,13 @@ class IntervalStorage<TX> implements SeriesStorage<TX, double> {
   @override
   TX getX(int index) => _xValues[index];
 
+  /// Returns the minimum value at [index].
   double getMin(int index) => _minValues[index];
 
+  /// Returns the maximum value at [index].
   double getMax(int index) => _maxValues[index];
 
+  /// Returns the mean value at [index].
   double getMean(int index) => _meanValues[index];
 
   @override

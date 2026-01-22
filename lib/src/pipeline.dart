@@ -38,12 +38,14 @@ abstract class Pipeline<TX, TY> {
 /// final output = pipeline.execute(series);
 /// ```
 class PipelineBuilder<TX, TY> implements Pipeline<TX, TY> {
+  /// Creates an empty pipeline builder.
   PipelineBuilder() : _steps = const [];
 
   PipelineBuilder._(this._steps);
 
   final List<_PipelineStep<TX, TY>> _steps;
 
+  /// Applies [mapper] to each Y value in the series.
   @override
   Pipeline<TX, TY> map(Mapper<TY> mapper) {
     _ensureNotCollapsed();
@@ -52,6 +54,7 @@ class PipelineBuilder<TX, TY> implements Pipeline<TX, TY> {
     );
   }
 
+  /// Applies [reducer] over non-overlapping windows defined by [window].
   @override
   Pipeline<TX, TY> window(WindowSpec window, SeriesReducer<TY> reducer) {
     _ensureNotCollapsed();
@@ -60,6 +63,7 @@ class PipelineBuilder<TX, TY> implements Pipeline<TX, TY> {
     );
   }
 
+  /// Applies [reducer] over rolling windows defined by [window].
   @override
   Pipeline<TX, TY> rolling(WindowSpec window, SeriesReducer<TY> reducer) {
     _ensureNotCollapsed();
@@ -68,6 +72,7 @@ class PipelineBuilder<TX, TY> implements Pipeline<TX, TY> {
     );
   }
 
+  /// Collapses the series into a single scalar value using [reducer].
   @override
   Pipeline<TX, TY> collapse(SeriesReducer<TY> reducer) {
     _ensureNotCollapsed();
@@ -76,6 +81,7 @@ class PipelineBuilder<TX, TY> implements Pipeline<TX, TY> {
     );
   }
 
+  /// Executes the pipeline and returns a transformed series.
   @override
   Series<TX, TY> execute(Series<TX, TY> input) {
     var current = input;
@@ -94,6 +100,7 @@ class PipelineBuilder<TX, TY> implements Pipeline<TX, TY> {
     return current;
   }
 
+  /// Executes the pipeline and returns a scalar value.
   @override
   TY executeScalar(Series<TX, TY> input) {
     var current = input;

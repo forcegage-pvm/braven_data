@@ -19,15 +19,15 @@ double root4(double value) => math.pow(value, 0.25).toDouble();
 /// final np = NormalizedPowerCalculator<int>(windowSize: 30).calculate(series);
 /// ```
 class NormalizedPowerCalculator<TX> {
+  /// Creates a normalized power calculator with [windowSize] in points.
   NormalizedPowerCalculator({this.windowSize = 30});
 
+  /// Number of points used for the rolling mean window.
   final int windowSize;
 
+  /// Calculates normalized power for the provided [series].
   double calculate(Series<TX, double> series) {
-    final pipeline = PipelineBuilder<TX, double>()
-        .rolling(WindowSpec.rolling(windowSize), SeriesReducer.mean)
-        .map(pow4)
-        .collapse(SeriesReducer.mean);
+    final pipeline = PipelineBuilder<TX, double>().rolling(WindowSpec.rolling(windowSize), SeriesReducer.mean).map(pow4).collapse(SeriesReducer.mean);
 
     final meanPower4 = pipeline.executeScalar(series);
     return root4(meanPower4);
@@ -39,6 +39,7 @@ class NormalizedPowerCalculator<TX> {
 /// Algorithm: EWMA → power(4) → mean → power(0.25).
 // ignore: camel_case_types
 class xPowerCalculator<TX> {
+  /// Creates an xPower calculator with smoothing configuration.
   xPowerCalculator({
     this.windowSize = 25,
     double? alpha,
@@ -46,10 +47,12 @@ class xPowerCalculator<TX> {
   })  : _alpha = alpha,
         _timeConstantSeconds = timeConstantSeconds;
 
+  /// Number of points used for the rolling window.
   final int windowSize;
   final double? _alpha;
   final double? _timeConstantSeconds;
 
+  /// Calculates xPower for the provided [series].
   double calculate(Series<TX, double> series) {
     final alpha = _alpha ?? _alphaFromTimeConstant(_timeConstantSeconds ?? 25);
     final pipeline = PipelineBuilder<TX, double>()
@@ -67,16 +70,16 @@ class xPowerCalculator<TX> {
 
 /// Computes Variability Index (VI) = Normalized Power / Average Power.
 class VariabilityIndexCalculator<TX> {
+  /// Creates a variability index calculator with [windowSize] in points.
   VariabilityIndexCalculator({this.windowSize = 30});
 
+  /// Number of points used for the rolling mean window.
   final int windowSize;
 
+  /// Calculates variability index (VI) for the provided [series].
   double calculate(Series<TX, double> series) {
-    final normalizedPower =
-        NormalizedPowerCalculator<TX>(windowSize: windowSize).calculate(series);
-    final averagePower = PipelineBuilder<TX, double>()
-        .collapse(SeriesReducer.mean)
-        .executeScalar(series);
+    final normalizedPower = NormalizedPowerCalculator<TX>(windowSize: windowSize).calculate(series);
+    final averagePower = PipelineBuilder<TX, double>().collapse(SeriesReducer.mean).executeScalar(series);
 
     if (averagePower == 0) {
       throw StateError('Average power is zero; VI is undefined.');
@@ -88,12 +91,15 @@ class VariabilityIndexCalculator<TX> {
 
 /// Exponential weighted moving average reducer for rolling windows.
 class ExponentialMeanReducer extends SeriesReducer<double> {
+  /// Creates an exponential mean reducer with smoothing factor [alpha].
   ExponentialMeanReducer({required this.alpha}) {
     _validateAlpha(alpha);
   }
 
+  /// Smoothing factor for the exponential moving average.
   final double alpha;
 
+  /// Reduces [values] using an exponential weighted mean.
   @override
   double reduce(List<double> values) {
     if (values.isEmpty) {
@@ -110,9 +116,7 @@ class ExponentialMeanReducer extends SeriesReducer<double> {
 }
 
 double _alphaFromTimeConstant(double timeConstantSeconds) {
-  if (timeConstantSeconds.isNaN ||
-      timeConstantSeconds.isInfinite ||
-      timeConstantSeconds <= 0) {
+  if (timeConstantSeconds.isNaN || timeConstantSeconds.isInfinite || timeConstantSeconds <= 0) {
     throw ArgumentError('timeConstantSeconds must be a positive finite value.');
   }
   return 1 - math.exp(-1 / timeConstantSeconds);

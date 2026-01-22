@@ -14,6 +14,10 @@ class ColumnDef {
   /// Optional unit annotation.
   final String? unit;
 
+  /// Creates a column definition.
+  ///
+  /// Throws [ArgumentError] if [name] is empty or [defaultValue] does not
+  /// match the provided [type].
   ColumnDef({
     required this.name,
     required this.type,

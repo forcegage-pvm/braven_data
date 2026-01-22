@@ -5,24 +5,29 @@ import 'series.dart';
 sealed class WindowSpec {
   const WindowSpec._();
 
+  /// Creates a non-overlapping fixed-size window with [size] points.
   factory WindowSpec.fixed(num size) => FixedWindowSpec(size);
 
+  /// Creates a sliding window with [size] points that overlaps.
   factory WindowSpec.rolling(num size) => RollingWindowSpec(size);
 
-  factory WindowSpec.fixedDuration(Duration duration) =>
-      FixedDurationWindowSpec(duration);
+  /// Creates a fixed-duration window based on time [duration].
+  factory WindowSpec.fixedDuration(Duration duration) => FixedDurationWindowSpec(duration);
 
-  factory WindowSpec.rollingDuration(Duration duration) =>
-      RollingDurationWindowSpec(duration);
+  /// Creates a rolling-duration window based on time [duration].
+  factory WindowSpec.rollingDuration(Duration duration) => RollingDurationWindowSpec(duration);
 
-  factory WindowSpec.pixelAligned(double pixelDensity) =>
-      PixelAlignedWindowSpec(pixelDensity);
+  /// Creates a pixel-aligned window for rendering at [pixelDensity].
+  factory WindowSpec.pixelAligned(double pixelDensity) => PixelAlignedWindowSpec(pixelDensity);
 }
 
 /// Reduces a list of values into a single value.
 abstract class SeriesReducer<T> {
   const SeriesReducer();
 
+  /// Reduces [values] to a single output value.
+  ///
+  /// Implementations may throw if [values] is empty or contains invalid data.
   T reduce(List<T> values);
 
   /// Built-in reducers for double values.
@@ -43,8 +48,13 @@ class AggregationSpec<TX> {
     this.alignment = WindowAlignment.end,
   });
 
+  /// The windowing strategy to apply.
   final WindowSpec window;
+
+  /// The reducer function that collapses window values.
   final SeriesReducer<dynamic> reducer;
+
+  /// The alignment strategy for window X values (default: end).
   final WindowAlignment alignment;
 }
 
@@ -56,6 +66,7 @@ class FixedWindowSpec extends WindowSpec {
     _validateSize(size, 'size');
   }
 
+  /// Number of points per fixed window.
   final num size;
 }
 
@@ -67,6 +78,7 @@ class RollingWindowSpec extends WindowSpec {
     _validateSize(size, 'size');
   }
 
+  /// Number of points per rolling window.
   final num size;
 }
 
@@ -78,13 +90,16 @@ class FixedDurationWindowSpec extends WindowSpec {
     _validateDuration(duration, 'duration');
   }
 
+  /// Duration represented by each window.
   final Duration duration;
 
+  /// Converts [duration] to a point count based on the series sample rate.
   int pointCountForSeries<TX, TY>(Series<TX, TY> series) {
     final sampleRate = inferredSampleRateHz(series);
     return _durationPointCount(duration, sampleRate);
   }
 
+  /// Infers the sample rate (Hz) from the series X-value deltas.
   double inferredSampleRateHz<TX, TY>(Series<TX, TY> series) {
     return _inferSampleRateHz(series);
   }
@@ -98,13 +113,16 @@ class RollingDurationWindowSpec extends WindowSpec {
     _validateDuration(duration, 'duration');
   }
 
+  /// Duration represented by each rolling window.
   final Duration duration;
 
+  /// Converts [duration] to a point count based on the series sample rate.
   int pointCountForSeries<TX, TY>(Series<TX, TY> series) {
     final sampleRate = inferredSampleRateHz(series);
     return _durationPointCount(duration, sampleRate);
   }
 
+  /// Infers the sample rate (Hz) from the series X-value deltas.
   double inferredSampleRateHz<TX, TY>(Series<TX, TY> series) {
     return _inferSampleRateHz(series);
   }
@@ -121,6 +139,7 @@ class PixelAlignedWindowSpec extends WindowSpec {
     }
   }
 
+  /// Target pixel density used to derive window size.
   final double pixelDensity;
 }
 
@@ -260,8 +279,7 @@ int _durationPointCount(Duration duration, double sampleRateHz) {
     throw ArgumentError('Sample rate must be a positive finite value.');
   }
 
-  final seconds =
-      duration.inMicroseconds / Duration.microsecondsPerSecond.toDouble();
+  final seconds = duration.inMicroseconds / Duration.microsecondsPerSecond.toDouble();
   final count = (seconds * sampleRateHz).round();
   return count < 1 ? 1 : count;
 }

@@ -1,9 +1,12 @@
 import '../series.dart';
 import 'series_metric.dart';
 
+/// Computes the arithmetic mean of a series.
 class MeanMetric extends SeriesMetric<double> {
+  /// Creates a mean metric instance.
   const MeanMetric();
 
+  /// Returns the mean value, or 0.0 when the series is empty.
   @override
   double calculate(Series<dynamic, double> series) {
     if (series.length == 0) {
@@ -18,9 +21,12 @@ class MeanMetric extends SeriesMetric<double> {
   }
 }
 
+/// Computes the maximum value in a series.
 class MaxMetric extends SeriesMetric<double> {
+  /// Creates a max metric instance.
   const MaxMetric();
 
+  /// Returns the maximum value, or negative infinity when the series is empty.
   @override
   double calculate(Series<dynamic, double> series) {
     if (series.length == 0) {

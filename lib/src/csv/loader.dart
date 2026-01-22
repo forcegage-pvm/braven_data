@@ -7,6 +7,12 @@ import 'x_value_type.dart';
 
 /// Loads CSV content into a [DataFrame] using a [CsvSchema].
 class CsvLoader {
+  /// Parses CSV [content] according to the [schema] and returns a [DataFrame].
+  ///
+  /// The [schema] defines the structure, delimiter, X-value type, and columns.
+  ///
+  /// Throws [FormatException] if the CSV content is empty or malformed.
+  /// Throws [ArgumentError] if the schema's xColumn is not found in headers.
   static DataFrame loadString(String content, CsvSchema schema) {
     if (content.trim().isEmpty) {
       throw const FormatException('CSV content is empty');
@@ -111,9 +117,7 @@ class CsvLoader {
     }
 
     var offset = 0;
-    if (schema.xType == XValueType.rowIndex &&
-        schema.xColumn == null &&
-        fields.length == schema.columns.length + 1) {
+    if (schema.xType == XValueType.rowIndex && schema.xColumn == null && fields.length == schema.columns.length + 1) {
       offset = 1;
     }
 
@@ -134,8 +138,7 @@ class CsvLoader {
   }
 
   static int _expectedFieldCount(CsvSchema schema, int actual) {
-    final baseCount = schema.columns.length +
-        (schema.xType != XValueType.rowIndex && schema.xColumn != null ? 1 : 0);
+    final baseCount = schema.columns.length + (schema.xType != XValueType.rowIndex && schema.xColumn != null ? 1 : 0);
     if (schema.xType == XValueType.rowIndex && schema.xColumn == null) {
       if (actual == baseCount || actual == baseCount + 1) {
         return actual;

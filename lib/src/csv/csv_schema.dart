@@ -21,6 +21,10 @@ class CsvSchema {
   /// Column delimiter character.
   final String delimiter;
 
+  /// Creates a CSV schema that describes how to parse columns.
+  ///
+  /// Throws [ArgumentError] if [xType] requires an [xColumn] and none is
+  /// provided, if no [columns] are defined, or if column names are not unique.
   CsvSchema({
     this.xColumn,
     required this.xType,

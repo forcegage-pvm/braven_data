@@ -2,11 +2,15 @@ import '../algorithms.dart';
 import '../series.dart';
 import 'series_metric.dart';
 
+/// Computes Normalized Power using a rolling mean window.
 class NormalizedPowerMetric extends SeriesMetric<double> {
+  /// Creates a Normalized Power metric with a rolling [windowSize].
   NormalizedPowerMetric({this.windowSize = const Duration(seconds: 30)});
 
+  /// Size of the rolling window used for smoothing.
   final Duration windowSize;
 
+  /// Returns the normalized power value for [series].
   @override
   double calculate(Series<dynamic, double> series) {
     if (series.length == 0) {
@@ -39,15 +43,21 @@ class NormalizedPowerMetric extends SeriesMetric<double> {
   }
 }
 
+/// Computes xPower using an exponential weighted moving average.
 class XPowerMetric extends SeriesMetric<double> {
+  /// Creates an xPower metric using [windowSize] and optional smoothing [alpha].
   XPowerMetric({
     this.windowSize = const Duration(seconds: 25),
     double? alpha,
   }) : alpha = alpha ?? 1 / (windowSize.inSeconds + 1);
 
+  /// Size of the rolling window used for smoothing.
   final Duration windowSize;
+
+  /// Smoothing coefficient for the EWMA calculation.
   final double alpha;
 
+  /// Returns the xPower value for [series].
   @override
   double calculate(Series<dynamic, double> series) {
     if (series.length == 0) {
@@ -71,9 +81,12 @@ class XPowerMetric extends SeriesMetric<double> {
   }
 }
 
+/// Computes Variability Index (VI) = Normalized Power / Average Power.
 class VariabilityIndexMetric extends SeriesMetric<double> {
+  /// Creates a variability index metric instance.
   const VariabilityIndexMetric();
 
+  /// Returns the variability index for [series].
   @override
   double calculate(Series<dynamic, double> series) {
     if (series.length == 0) {

@@ -58,15 +58,28 @@ class Series<TX, TY> {
     );
   }
 
+  /// Unique identifier for this series.
   final String id;
+
+  /// Metadata describing this series (name, unit).
   final SeriesMeta meta;
+
+  /// Optional precomputed statistics for this series.
   final SeriesStats? stats;
+
   final SeriesStorage<dynamic, dynamic> _storage;
 
+  /// The number of data points in this series.
   int get length => _storage.length;
 
+  /// Returns the X value at the specified [index].
+  ///
+  /// Throws [RangeError] if [index] is out of bounds.
   TX getX(int index) => _storage.getX(index) as TX;
 
+  /// Returns the Y value at the specified [index].
+  ///
+  /// Throws [RangeError] if [index] is out of bounds.
   TY getY(int index) => _storage.getY(index) as TY;
 
   /// Applies a transformation pipeline to this series.
@@ -159,10 +172,7 @@ bool _canUseTypedStorage<TX, TY>(List<TX> xValues, List<TY> yValues) {
 }
 
 bool _isNumericList<T>(List<T> values) {
-  return values is Float64List ||
-      values is Int64List ||
-      values is List<double> ||
-      values is List<int>;
+  return values is Float64List || values is Int64List || values is List<double> || values is List<int>;
 }
 
 /// Describes a series with a name and optional unit.
@@ -172,7 +182,10 @@ class SeriesMeta {
     this.unit,
   });
 
+  /// The display name of the series.
   final String name;
+
+  /// The unit of measurement for the series values (e.g., 'W', 'bpm').
   final String? unit;
 }
 
@@ -188,8 +201,15 @@ class SeriesStats {
     required this.count,
   });
 
+  /// The minimum value in the series.
   final num min;
+
+  /// The maximum value in the series.
   final num max;
+
+  /// The arithmetic mean (average) of the series values.
   final num mean;
+
+  /// The number of data points used to compute these statistics.
   final int count;
 }

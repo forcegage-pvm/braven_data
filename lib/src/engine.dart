@@ -11,7 +11,10 @@ class AggregationResult<TX, TY> {
     required this.yValues,
   });
 
+  /// Aggregated X values for each window.
   final List<TX> xValues;
+
+  /// Aggregated Y values for each window.
   final List<TY> yValues;
 }
 
@@ -63,6 +66,9 @@ class AggregationEngine {
   }
 }
 
+/// Aligns a window's X values based on the provided [alignment].
+///
+/// Throws [ArgumentError] if [windowX] is empty.
 double alignWindowX(List<double> windowX, WindowAlignment alignment) {
   if (windowX.isEmpty) {
     throw ArgumentError('windowX must not be empty.');
@@ -92,8 +98,7 @@ AggregationResult<TX, TY> _aggregateFixed<TX, TY>(
   final seriesLength = series.length;
 
   for (var start = 0; start < seriesLength; start += windowSize) {
-    final end =
-        (start + windowSize) > seriesLength ? seriesLength : start + windowSize;
+    final end = (start + windowSize) > seriesLength ? seriesLength : start + windowSize;
     if (start >= end) {
       break;
     }
