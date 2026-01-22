@@ -1,0 +1,187 @@
+import 'package:braven_data/src/aggregation.dart';
+import 'package:braven_data/src/pipeline.dart';
+import 'package:braven_data/src/series.dart';
+import 'package:test/test.dart';
+
+void main() {
+  group('PipelineBuilder', () {
+    test('supports fluent chaining', () {
+      final pipeline = PipelineBuilder<int, double>()
+          .map((value) => value + 1)
+          .rolling(WindowSpec.fixed(2), SeriesReducer.mean)
+          .collapse(SeriesReducer.sum);
+
+      expect(pipeline, isA<Pipeline<int, double>>());
+      expect(pipeline, isA<PipelineBuilder<int, double>>());
+    });
+
+    test('map transforms values', () {
+      final series = _makeSeries([0, 1, 2], [1.0, 2.0, 3.0]);
+      final pipeline = PipelineBuilder<int, double>().map((value) => value * 2);
+
+      final result = pipeline.execute(series);
+
+      expect(result.length, 3);
+      expect(result.getX(0), 0);
+      expect(result.getX(1), 1);
+      expect(result.getX(2), 2);
+      expect(result.getY(0), 2.0);
+      expect(result.getY(1), 4.0);
+      expect(result.getY(2), 6.0);
+    });
+
+    test('fixed rolling windows reduce values', () {
+      final series = _makeSeries([0, 1, 2, 3, 4], [1, 2, 3, 4, 5]);
+      final pipeline = PipelineBuilder<int, double>().rolling(
+        WindowSpec.fixed(2),
+        SeriesReducer.mean,
+      );
+
+      final result = pipeline.execute(series);
+
+      expect(result.length, 3);
+      expect(result.getX(0), 0);
+      expect(result.getX(1), 2);
+      expect(result.getX(2), 4);
+      expect(result.getY(0), closeTo(1.5, 1e-9));
+      expect(result.getY(1), closeTo(3.5, 1e-9));
+      expect(result.getY(2), closeTo(5.0, 1e-9));
+    });
+
+    test('rolling windows slide across values', () {
+      final series = _makeSeries([0, 1, 2, 3], [1, 2, 3, 4]);
+      final pipeline = PipelineBuilder<int, double>().rolling(
+        WindowSpec.rolling(3),
+        SeriesReducer.sum,
+      );
+
+      final result = pipeline.execute(series);
+
+      expect(result.length, 2);
+      expect(result.getX(0), 0);
+      expect(result.getX(1), 1);
+      expect(result.getY(0), 6.0);
+      expect(result.getY(1), 9.0);
+    });
+
+    test('window reduces non-overlapping fixed windows', () {
+      final series = _makeSeries([0, 1, 2, 3, 4], [1, 2, 3, 4, 5]);
+      final pipeline = PipelineBuilder<int, double>().window(
+        WindowSpec.fixed(2),
+        SeriesReducer.mean,
+      );
+
+      final result = pipeline.execute(series);
+
+      expect(result.length, 3);
+      expect(result.getX(0), 0);
+      expect(result.getX(1), 2);
+      expect(result.getX(2), 4);
+      expect(result.getY(0), closeTo(1.5, 1e-9));
+      expect(result.getY(1), closeTo(3.5, 1e-9));
+      expect(result.getY(2), closeTo(5.0, 1e-9));
+    });
+
+    test('window handles partial final window', () {
+      final series = _makeSeries([0, 1, 2, 3], [1, 2, 3, 4]);
+      final pipeline = PipelineBuilder<int, double>().window(
+        WindowSpec.fixed(3),
+        SeriesReducer.sum,
+      );
+
+      final result = pipeline.execute(series);
+
+      expect(result.length, 2);
+      expect(result.getX(0), 0);
+      expect(result.getX(1), 3);
+      expect(result.getY(0), 6.0);
+      expect(result.getY(1), 4.0);
+    });
+
+    test('window handles empty series', () {
+      final series = _makeSeries([], []);
+      final pipeline = PipelineBuilder<int, double>().window(
+        WindowSpec.fixed(2),
+        SeriesReducer.sum,
+      );
+
+      final result = pipeline.execute(series);
+
+      expect(result.length, 0);
+    });
+
+    test('window handles series smaller than window size', () {
+      final series = _makeSeries([0, 1], [1, 2]);
+      final pipeline = PipelineBuilder<int, double>().window(
+        WindowSpec.fixed(5),
+        SeriesReducer.sum,
+      );
+
+      final result = pipeline.execute(series);
+
+      expect(result.length, 1);
+      expect(result.getX(0), 0);
+      expect(result.getY(0), 3.0);
+    });
+
+    test('collapse returns scalar value', () {
+      final series = _makeSeries([0, 1, 2], [1, 2, 3]);
+      final pipeline =
+          PipelineBuilder<int, double>().map((value) => value * 2).collapse(
+                SeriesReducer.sum,
+              );
+
+      final result = pipeline.executeScalar(series);
+
+      expect(result, 12.0);
+    });
+
+    test('map window collapse executes in order', () {
+      final series = _makeSeries([0, 1, 2, 3], [1, 2, 3, 4]);
+      final pipeline = PipelineBuilder<int, double>()
+          .map((value) => value * 2)
+          .window(WindowSpec.fixed(3), SeriesReducer.sum)
+          .collapse(SeriesReducer.sum);
+
+      final result = pipeline.executeScalar(series);
+
+      expect(result, 20.0);
+    });
+
+    test('executeScalar throws without collapse', () {
+      final series = _makeSeries([0, 1], [1, 2]);
+      final pipeline = PipelineBuilder<int, double>().map((value) => value + 1);
+
+      expect(() => pipeline.executeScalar(series), throwsStateError);
+    });
+
+    test('rolling with non-integer window size throws', () {
+      final series = _makeSeries([0, 1], [1, 2]);
+      final pipeline = PipelineBuilder<int, double>().rolling(
+        WindowSpec.fixed(1.5),
+        SeriesReducer.sum,
+      );
+
+      expect(() => pipeline.execute(series), throwsArgumentError);
+    });
+
+    test('pixel aligned window is not supported', () {
+      final series = _makeSeries([0, 1], [1, 2]);
+      final pipeline = PipelineBuilder<int, double>().rolling(
+        WindowSpec.pixelAligned(2.0),
+        SeriesReducer.sum,
+      );
+
+      expect(() => pipeline.execute(series), throwsUnimplementedError);
+    });
+  });
+}
+
+Series<int, double> _makeSeries(List<int> xValues, List<num> yValues) {
+  return Series<int, double>.fromTypedData(
+    meta: const SeriesMeta(name: 'series'),
+    xValues: xValues,
+    yValues: yValues.map((value) => value.toDouble()).toList(),
+    stats: null,
+  );
+}

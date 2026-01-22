@@ -3,6 +3,8 @@
 Last updated: 2026-01-21
 
 ## Active Technologies
+- Dart 3.10+ (Pure Dart, no Flutter SDK) + dart:core, dart:typed_data, dart:collection, dart:convert (CSV parsing) (002-csv-processing-pipeline)
+- In-memory columnar buffers (Float64List, Int64List) (002-csv-processing-pipeline)
 
 - Dart 3.10+ (Pure Dart only)
 - Standard Dart libraries: `dart:core`, `dart:math`, `dart:typed_data`, `dart:collection`

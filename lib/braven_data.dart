@@ -14,8 +14,17 @@
 /// - Potential future extraction to a separate package
 library;
 
-// TODO: Export public API modules as they are implemented
-// export 'src/series.dart';
-// export 'src/storage.dart';
-// export 'src/aggregation.dart';
-// export 'src/pipeline.dart';
+export 'src/aggregation.dart';
+export 'src/algorithms.dart';
+// CSV processing pipeline exports (placeholder).
+export 'src/csv/csv.dart';
+// DataFrame layer exports.
+export 'src/dataframe/dataframe.dart';
+export 'src/engine.dart';
+// Metrics layer exports.
+export 'src/metrics/metrics.dart';
+// Output layer exports.
+export 'src/output/output.dart';
+export 'src/pipeline.dart';
+export 'src/series.dart';
+export 'src/storage.dart';
