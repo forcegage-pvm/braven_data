@@ -136,8 +136,7 @@ void main() {
       expect(series.meta.unit, 'W');
     });
 
-    test('toSeries auto-generates SeriesMeta from column name if not provided',
-        () {
+    test('toSeries auto-generates SeriesMeta from column name if not provided', () {
       final schema = CsvSchema(
         xColumn: 'time',
         xType: XValueType.epochSeconds,
