@@ -139,9 +139,6 @@ dart run test/benchmarks/perf.dart
 - Data model: [specs/001-data-input/data-model.md](specs/001-data-input/data-model.md)
 - Plan: [specs/001-data-input/plan.md](specs/001-data-input/plan.md)
 
-```
-
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
-```
