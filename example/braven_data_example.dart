@@ -32,6 +32,7 @@ Future<void> main() async {
   exampleCustomMetric();
   exampleXValueAutoDetection();
   await exampleFitLoading();
+  await exampleDistributionAnalysis();
 
   print('');
   print('═' * 60);
@@ -350,8 +351,49 @@ Future<void> exampleFitLoading() async {
   }
 
   print('');
+  if (records.columnNames.contains('power')) {
+    final powerSeries = records.toSeries('power', meta: const SeriesMeta(name: 'Power', unit: 'W'));
+    if (powerSeries.length < 2) {
+      print('  Not enough power samples to compute rolling metrics.');
+      print('');
+    } else {
+      // Use duration-based rolling window (supported by AggregationEngine)
+      const windowDuration = Duration(seconds: 30);
+      final rollingNpSeries = powerSeries.aggregate(
+        AggregationSpec(
+          window: WindowSpec.rollingDuration(windowDuration),
+          // Use standard NP reducer from library
+          reducer: SeriesReducer.normalizedPower,
+        ),
+      );
 
-  final powerSeries = records.toSeries("power");
+      final normalizedPower = _computeNormalizedPowerFromRollingValues(rollingNpSeries);
+
+      // Also Calculate xPower using standard reducer
+      // For rolling xPower, we might want a similar rolling window
+      final rollingXPowerSeries = powerSeries.aggregate(AggregationSpec(
+        window: WindowSpec.rollingDuration(windowDuration),
+        // xPower specific reducer
+        reducer: SeriesReducer.xPower(timeConstantSeconds: 25),
+      ));
+      final xPower = _computeNormalizedPowerFromRollingValues(rollingXPowerSeries);
+
+      if (rollingNpSeries.length == 0) {
+        print('  Not enough power samples for a 30s rolling window.');
+        print('');
+      } else {
+        print('  Power Series:');
+        print('    Samples: ${powerSeries.length}');
+        print('    30s Rolling NP Points: ${rollingNpSeries.length}');
+        print('    Normalized Power (SeriesReducer): ${normalizedPower.toStringAsFixed(1)} W');
+        print('    xPower (SeriesReducer): ${xPower.toStringAsFixed(1)} W');
+        print('');
+      }
+    }
+  } else {
+    print('  Power column not found in FIT records.');
+    print('');
+  }
 
   final laps = await FitLoader.load(
     fitFile.path,
@@ -505,4 +547,98 @@ double _calculateVariance(Series<double, double> series) {
     sumSquaredDiff += diff * diff;
   }
   return sumSquaredDiff / series.length;
+}
+
+/// Computes Normalized Power from rolling window values.
+///
+/// Applies power(4) → mean → power(0.25) across the rolling output.
+/// Skips NaN values (from null power readings).
+double _computeNormalizedPowerFromRollingValues(Series<double, double> rollingSeries) {
+  if (rollingSeries.length == 0) {
+    return 0.0;
+  }
+
+  var sumPower4 = 0.0;
+  var validCount = 0;
+  for (var i = 0; i < rollingSeries.length; i++) {
+    final value = rollingSeries.getY(i);
+    if (!value.isNaN && !value.isInfinite) {
+      sumPower4 += pow4(value);
+      validCount++;
+    }
+  }
+
+  if (validCount == 0) {
+    return 0.0;
+  }
+
+  final meanPower4 = sumPower4 / validCount;
+  return root4(meanPower4);
+}
+
+// ============================================================================
+// Example 9: Distribution Analysis
+// ============================================================================
+
+Future<void> exampleDistributionAnalysis() async {
+  print('┌─────────────────────────────────────────────────────────┐');
+  print('│ Example 9: Distribution Analysis (Zones)                │');
+  print('└─────────────────────────────────────────────────────────┘');
+
+  // Use the FIT file from Example 8 if available
+  const fitPath = 'specs/_base/003-fit-file/joubertjp.2020-12-05-16-16-30-219Z.GarminPush.74900175025.fit';
+  final fitFile = File(fitPath);
+
+  if (!fitFile.existsSync()) {
+    print('  FIT file not found at $fitPath');
+    // Fallback to generated data
+    print('  Generating synthetic data for demonstration...');
+    final syntheticData = _createRealisticPowerSeries(3600); // 1 hour
+    _runDistributionOnSeries(syntheticData);
+    return;
+  }
+
+  print('  Loading FIT file: $fitPath');
+  // Load FIT records
+  final df = await FitLoader.load(fitPath, FitMessageType.records);
+
+  if (df.columnNames.contains('power')) {
+    final powerSeries = df.toSeries('power', meta: const SeriesMeta(name: 'Power', unit: 'W'));
+    print('  Power Series loaded: ${powerSeries.length} points.');
+    _runDistributionOnSeries(powerSeries);
+  } else {
+    print('  No power column found in FIT file.');
+  }
+  print('');
+}
+
+void _runDistributionOnSeries(Series<dynamic, double> series) {
+  // 20W bands
+  final result = DistributionCalculator.calculate(
+    series,
+    20.0,
+    minVal: 0,
+    maxGap: 5.0,
+  );
+
+  print('  Distribution calculated (20W bands).');
+
+  final timeSeries = result.toTimeSeries(name: 'Time in Zone');
+
+  print('  Top 5 occurring bands:');
+
+  // Sort by duration descending to finding most popular zones
+  final entries = result.timeInBand.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+
+  for (final entry in entries.take(5)) {
+    final work = result.workInBand[entry.key] ?? 0;
+    print('    Band ${entry.key} W: ${(entry.value / 60).toStringAsFixed(1)} min, ${(work / 1000).toStringAsFixed(1)} kJ');
+  }
+
+  print('');
+  print('  Converted to Series (for charting):');
+  if (timeSeries.length > 0) {
+    print('    X-Axis (Bands):   ${timeSeries.getX(0)} ... ${timeSeries.getX(timeSeries.length - 1)}');
+    print('    Y-Axis (Seconds): ${timeSeries.getY(0).round()} ... ${timeSeries.getY(timeSeries.length - 1).round()}');
+  }
 }

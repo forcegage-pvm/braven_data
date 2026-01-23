@@ -17,6 +17,7 @@ This package is under active development. APIs may evolve until the first stable
 - **High Performance**: Load 10K rows in <500ms, aggregate 100k points to 1k in <50ms
 - **Type Safety**: Generic `Series<TX, TY>` with strict typing
 - **Scientific Algorithms**: Built-in Normalized Power, xPower, Variability Index
+- **Frequency Distribution**: Analyze time-in-zone and work-in-zone distributions (histograms)
 - **Duration Windows**: Time-based rolling aggregation (30-second smoothing, etc.)
 - **Chart Output**: Convert Series to `ChartDataPoint[]` for visualization libraries
 - **Custom Metrics**: Extensible `SeriesMetric` interface for domain-specific calculations

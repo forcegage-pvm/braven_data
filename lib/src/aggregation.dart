@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'output/window_alignment.dart';
 import 'series.dart';
 
@@ -35,6 +37,23 @@ abstract class SeriesReducer<T> {
   static SeriesReducer<double> get max => const MaxReducer();
   static SeriesReducer<double> get min => const MinReducer();
   static SeriesReducer<double> get sum => const SumReducer();
+  static SeriesReducer<double> get normalizedPower => const NormalizedPowerReducer();
+
+  /// Returns an xPower reducer with optional time constant or alpha.
+  ///
+  /// [alpha] is the smoothing factor (0 < alpha <= 1).
+  /// [timeConstantSeconds] is used to calculate alpha if [alpha] is not provided.
+  /// Standard xPower uses ~25s time constant.
+  ///
+  /// Since reducers are stateless with respect to window duration, [timeConstantSeconds]
+  /// assumes a 1Hz sample rate roughly or you must provide the correct [alpha].
+  static SeriesReducer<double> xPower({double? alpha, double timeConstantSeconds = 25.0}) {
+    if (alpha != null) {
+      return XPowerReducer(alpha: alpha);
+    }
+    final calculatedAlpha = 1.0 - math.exp(-1.0 / timeConstantSeconds);
+    return XPowerReducer(alpha: calculatedAlpha);
+  }
 }
 
 /// Configuration for aggregating a series.
@@ -230,6 +249,77 @@ class SumReducer extends SeriesReducer<double> {
       sum += value;
     }
     return sum;
+  }
+}
+
+/// Normalized Power reducer.
+///
+/// Calculates (mean(values^4))^0.25. Skips NaN/Infinity.
+class NormalizedPowerReducer extends SeriesReducer<double> {
+  const NormalizedPowerReducer();
+
+  @override
+  double reduce(List<double> values) {
+    if (values.isEmpty) {
+      throw ArgumentError('values must not be empty.');
+    }
+
+    var sumPower4 = 0.0;
+    var count = 0;
+    for (final value in values) {
+      if (!value.isNaN && !value.isInfinite) {
+        sumPower4 += math.pow(value, 4).toDouble();
+        count++;
+      }
+    }
+
+    if (count == 0) {
+      return double.nan;
+    }
+
+    return math.pow(sumPower4 / count, 0.25).toDouble();
+  }
+}
+
+/// xPower reducer using Exponential Weighted Moving Average (EWMA).
+///
+/// Applies EWMA to the window values, then (mean(values^4))^0.25.
+class XPowerReducer extends SeriesReducer<double> {
+  const XPowerReducer({required this.alpha});
+
+  final double alpha;
+
+  @override
+  double reduce(List<double> values) {
+    if (values.isEmpty) {
+      throw ArgumentError('values must not be empty.');
+    }
+
+    // Apply EWMA smoothing to the window
+    var currentEwma = values.first;
+    var sumPower4 = 0.0;
+    var count = 0;
+
+    // Treat first value as initial EWMA seed
+    if (currentEwma.isFinite) {
+      sumPower4 += math.pow(currentEwma, 4).toDouble();
+      count++;
+    }
+
+    for (var i = 1; i < values.length; i++) {
+      final val = values[i];
+      if (val.isNaN || val.isInfinite) continue;
+
+      currentEwma = alpha * val + (1 - alpha) * currentEwma;
+      sumPower4 += math.pow(currentEwma, 4).toDouble();
+      count++;
+    }
+
+    if (count == 0) {
+      return double.nan;
+    }
+
+    return math.pow(sumPower4 / count, 0.25).toDouble();
   }
 }
 

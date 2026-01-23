@@ -16,6 +16,7 @@ library;
 
 export 'src/aggregation.dart';
 export 'src/algorithms.dart';
+export 'src/analysis/distribution.dart';
 // CSV processing pipeline exports (placeholder).
 export 'src/csv/csv.dart';
 // DataFrame layer exports.
