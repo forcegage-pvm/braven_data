@@ -57,7 +57,7 @@ extension DataFrameSeriesExtraction on DataFrame {
 
     final resolvedMeta = meta ?? _metaForColumn(yColumn);
     final xValues = getXValues();
-    final yValues = List<double>.from(column);
+    final yValues = column.map((value) => value is num ? value.toDouble() : double.nan).toList(growable: false);
 
     return Series<double, double>.fromTypedData(
       meta: resolvedMeta,

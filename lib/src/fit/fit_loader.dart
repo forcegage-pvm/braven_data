@@ -5,6 +5,7 @@ import 'package:dart_fit_decoder/dart_fit_decoder.dart' as fit_decoder;
 
 import '../csv/column_def.dart';
 import '../csv/field_type.dart';
+import '../csv/x_value_type.dart';
 import '../dataframe/dataframe.dart';
 import 'fit_schema.dart';
 
@@ -107,8 +108,11 @@ class FitLoader {
     }
 
     final xColumn = schema.xColumn;
-    if (xColumn != null && !columnDefs.containsKey(xColumn)) {
-      columnDefs[xColumn] = ColumnDef(name: xColumn, type: FieldType.string);
+    if (xColumn != null) {
+      columnDefs[xColumn] = ColumnDef(
+        name: xColumn,
+        type: _xColumnFieldType(schema.xType),
+      );
     }
 
     final columns = <String, List<dynamic>>{};
@@ -116,11 +120,16 @@ class FitLoader {
       columns[name] = <dynamic>[];
     }
 
+    DateTime? lastTimestamp;
     for (final message in messages) {
       final values = message.toMap();
-      final timestamp = message.timestamp;
-      if (timestamp != null && schema.xColumn != null) {
-        values[schema.xColumn!] = timestamp;
+      final rawTimestamp = message.timestamp;
+      if (schema.xColumn != null) {
+        final resolvedTimestamp = rawTimestamp ?? lastTimestamp ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+        values[schema.xColumn!] = _normalizeTimestamp(schema.xType, resolvedTimestamp);
+        if (rawTimestamp != null) {
+          lastTimestamp = rawTimestamp;
+        }
       }
 
       for (final entry in columns.entries) {
@@ -188,6 +197,10 @@ class FitLoader {
       return null;
     }
 
+    if (value is DateTime) {
+      return value.toIso8601String();
+    }
+
     switch (def.type) {
       case FieldType.float64:
         if (value is num) {
@@ -201,6 +214,37 @@ class FitLoader {
         return int.tryParse(value.toString());
       case FieldType.string:
         return value.toString();
+    }
+  }
+
+  static FieldType _xColumnFieldType(XValueType type) {
+    switch (type) {
+      case XValueType.iso8601:
+        return FieldType.string;
+      case XValueType.epochSeconds:
+      case XValueType.epochMillis:
+      case XValueType.elapsedSeconds:
+      case XValueType.elapsedMillis:
+      case XValueType.rowIndex:
+      case XValueType.custom:
+        return FieldType.float64;
+    }
+  }
+
+  static dynamic _normalizeTimestamp(XValueType type, DateTime timestamp) {
+    switch (type) {
+      case XValueType.iso8601:
+        return timestamp.toIso8601String();
+      case XValueType.epochSeconds:
+      case XValueType.elapsedSeconds:
+        return timestamp.millisecondsSinceEpoch / 1000.0;
+      case XValueType.epochMillis:
+      case XValueType.elapsedMillis:
+        return timestamp.millisecondsSinceEpoch.toDouble();
+      case XValueType.rowIndex:
+        return null;
+      case XValueType.custom:
+        return timestamp.toIso8601String();
     }
   }
 }

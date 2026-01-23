@@ -7,16 +7,18 @@
 /// 4. Calculating scalar metrics (NormalizedPower, VariabilityIndex)
 /// 5. Converting to chart-ready output
 /// 6. Custom metric implementation
+/// 7. FIT file loading (records, laps, sessions)
 ///
 /// Run with: dart run example/braven_data_example.dart
 library;
 
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:braven_data/braven_data.dart';
 
-void main() {
+Future<void> main() async {
   print('═' * 60);
   print(' braven_data Examples');
   print('═' * 60);
@@ -29,6 +31,7 @@ void main() {
   exampleChartOutput();
   exampleCustomMetric();
   exampleXValueAutoDetection();
+  await exampleFitLoading();
 
   print('');
   print('═' * 60);
@@ -312,6 +315,60 @@ void exampleXValueAutoDetection() {
     final detected = XValueDetector.detect(entry.value);
     print('    ${entry.key.padRight(16)} → $detected');
   }
+  print('');
+}
+
+// ============================================================================
+// Example 8: FIT File Loading
+// ============================================================================
+
+Future<void> exampleFitLoading() async {
+  print('┌─────────────────────────────────────────────────────────┐');
+  print('│ Example 8: FIT File Loading                             │');
+  print('└─────────────────────────────────────────────────────────┘');
+
+  const fitPath = 'specs/_base/003-fit-file/joubertjp.2020-12-05-16-16-30-219Z.GarminPush.74900175025.fit';
+  final fitFile = File(fitPath);
+  if (!fitFile.existsSync()) {
+    print('  FIT file not found at $fitPath');
+    print('');
+    return;
+  }
+
+  final records = await FitLoader.load(
+    fitFile.path,
+    FitMessageType.records,
+  );
+
+  print('  Records DataFrame:');
+  print('    Rows: ${records.rowCount}');
+  print('    Columns: ${records.columnNames.take(10).join(", ")}${records.columnNames.length > 10 ? "..." : ""}');
+
+  final powerValues = records.columns['power'];
+  if (powerValues != null && powerValues.isNotEmpty) {
+    print('    First 5 power values: ${powerValues.take(5).map((v) => (v as num).toStringAsFixed(1)).join(", ")}');
+  }
+
+  print('');
+
+  final powerSeries = records.toSeries("power");
+
+  final laps = await FitLoader.load(
+    fitFile.path,
+    FitMessageType.laps,
+  );
+  print('  Laps DataFrame:');
+  print('    Rows: ${laps.rowCount}');
+  print('    Columns: ${laps.columnNames.join(", ")}');
+  print('');
+
+  final sessions = await FitLoader.load(
+    fitFile.path,
+    FitMessageType.sessions,
+  );
+  print('  Sessions DataFrame:');
+  print('    Rows: ${sessions.rowCount}');
+  print('    Columns: ${sessions.columnNames.join(", ")}');
   print('');
 }
 
